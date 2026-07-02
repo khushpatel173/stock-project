@@ -7,7 +7,14 @@ import jwt from 'jsonwebtoken'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import "dotenv/config";
+import WebSocket from 'ws';
+import {WebSocketServer} from 'ws'
+import protobuf from 'protobufjs'
+import http from 'http'
 const app = express();
+
+   const server = http.createServer(app);
+
 app.use(express.json());
 app.use(cors({
     origin: "http://localhost:5173",
@@ -33,7 +40,7 @@ passport.use(new Strategy({
     // what happens after login
     // check if the user is there in the db if he is not then add him to the db
     try {
-        let user = await User.findOne({
+        let user : any = await User.findOne({
         googleId : profile.id
     });
     const email = profile.emails?.[0]?.value;
@@ -56,7 +63,7 @@ if (!email) {
     
 }));
 
-app.listen(8080 , ()=>{
+server.listen(8080 , ()=>{
     console.log("Server listening to port 8080");
 });
 
@@ -99,7 +106,7 @@ app.get("/profile" , async(req ,res)=>{
                 message: "Not authenticated"
             });
         }
-         const decoded = jwt.verify(
+         const decoded : any = jwt.verify(
             token,
             "secret"
         );
@@ -131,3 +138,57 @@ app.get("/logout" , (req ,res)=>{
 
 
 // if done then kaha jana he and then if fails then kaha jana he
+
+
+
+    const ws = new WebSocket("wss://streamer.finance.yahoo.com/?version=2");
+ 
+
+    const ws2 = new WebSocketServer({
+        server
+    });
+
+    ws.on("open" , async()=>{
+        console.log("Socket Connected!");
+        ws.send(JSON.stringify(
+            {
+               subscribe: [
+            "^NSEI",
+            "^NSEBANK",
+            "^BSESN",
+            "RELIANCE.NS",
+            "TCS.NS"
+        ]
+            }
+        ))
+        console.log("Subscribed!");
+        const root = await protobuf.load("protobuf/PricingData.proto")
+        const PricingData = root.lookupType("PricingData");
+
+        ws.on("message", (message) => {
+        // console.log(typeof message);
+        const parsed = JSON.parse(message.toString());
+        const buffer = Buffer.from(parsed.message, "base64");
+        const decoded = PricingData.decode(buffer);
+        console.log(decoded);
+        //  now we will send this data to the frontend and for tht also we wll use a websocket
+        
+
+        // send the decoded data to all the connected clients 
+        ws2.clients.forEach((client)=> {
+             if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(decoded));
+    }
+        })
+
+    });
+
+    ws.on("close", () => {
+        console.log("Closed");
+    });
+
+    ws.on("error", (err) => {
+        console.error(err);
+    });
+    })
+
