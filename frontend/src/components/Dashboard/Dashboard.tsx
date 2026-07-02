@@ -20,7 +20,7 @@ ws.onmessage = (event) => {
 };
   return (
       <>
-     {Array.from(stocks.values()).map((stock) => (
+     {Array.from(stocks.values()) .map((stock) => (
     <StockCard
         key={stock.id}
         price={stock.price}

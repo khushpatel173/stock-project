@@ -136,7 +136,16 @@ app.get("/logout" , (req ,res)=>{
     });
 });
 
-
+app.get("/getStocks/:stock" , async(req ,res)=>{
+     const {stock} = req.params;    
+    //  now search for this stock
+    const response = await fetch(`https://query2.finance.yahoo.com/v1/finance/search?q=${stock}`);
+    const ans = await response.json();
+    const requiredStocks = ans.quotes.filter((stock:any) => (stock.symbol.endsWith(".BO") || stock.symbol.endsWith(".NS")));
+    res.json({
+        stockData : requiredStocks
+    });
+})
 // if done then kaha jana he and then if fails then kaha jana he
 
 
@@ -153,11 +162,11 @@ app.get("/logout" , (req ,res)=>{
         ws.send(JSON.stringify(
             {
                subscribe: [
-            "^NSEI",
-            "^NSEBANK",
-            "^BSESN",
+            // "^NSEI",
+            // "^NSEBANK",
+            // "^BSESN",
             "RELIANCE.NS",
-            "TCS.NS"
+            // "TCS.NS"
         ]
             }
         ))

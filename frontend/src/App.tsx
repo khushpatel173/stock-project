@@ -5,6 +5,7 @@ import authService from "./services/auth"
 import Header from "./components/Header/Header"
 import type { IRootState  , AppDispatch} from "../store/store"
 import Dashboard from "./components/Dashboard/Dashboard"
+import Search from "./components/Search"
 function App() {
   const dispatch = useDispatch<AppDispatch>();
   const loading = useSelector((state : IRootState) => state.auth.loading);
