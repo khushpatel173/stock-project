@@ -1,20 +1,21 @@
 import { useState } from "react";
 import StockCard from "./StockCard";
-
-
+import { useContext } from "react";
+import WsContext from "../../contexts/wsContext";
 function Dashboard() {
-    const ws = new WebSocket("ws://localhost:8080");
+    const {ws}:any = useContext(WsContext);
     const[stocks , setStocks] = useState(new Map());
     ws.onopen = () => {
     console.log("Connected to backend");
 };
 
-ws.onmessage = (event) => {
+ws.onmessage = (event:any) => {
     // console.log(JSON.parse(event.data));
+
     const data = JSON.parse(event.data);
     setStocks((prev) => {
       const updated = new Map(prev);
-      updated.set(data.id , data);
+      updated.set(data.data.id , data.data);
       return updated
     })
 };

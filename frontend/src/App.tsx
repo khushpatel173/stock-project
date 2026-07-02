@@ -2,10 +2,12 @@ import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {login, logout , setLoading} from '../store/authSlice'
 import authService from "./services/auth"
+import Detail from "./components/Detail"
 import Header from "./components/Header/Header"
 import type { IRootState  , AppDispatch} from "../store/store"
 import Dashboard from "./components/Dashboard/Dashboard"
 import Search from "./components/Search"
+import WsContextProvider from "./contexts/wsContextProvider"
 function App() {
   const dispatch = useDispatch<AppDispatch>();
   const loading = useSelector((state : IRootState) => state.auth.loading);
@@ -36,7 +38,9 @@ function App() {
     }
   return (
    <> 
-    <Dashboard/>
+   <WsContextProvider>
+    <Detail/>
+    </WsContextProvider>
    </>
   )
 }

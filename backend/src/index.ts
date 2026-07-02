@@ -12,7 +12,7 @@ import {WebSocketServer} from 'ws'
 import protobuf from 'protobufjs'
 import http from 'http'
 const app = express();
-
+ const map = new Map();
    const server = http.createServer(app);
 
 app.use(express.json());
@@ -158,18 +158,19 @@ app.get("/getStocks/:stock" , async(req ,res)=>{
     });
 
     ws.on("open" , async()=>{
+       
         console.log("Socket Connected!");
-        ws.send(JSON.stringify(
-            {
-               subscribe: [
-            // "^NSEI",
-            // "^NSEBANK",
-            // "^BSESN",
-            "RELIANCE.NS",
-            // "TCS.NS"
-        ]
-            }
-        ))
+        // ws.send(JSON.stringify(
+        //     {
+        //        subscribe: [
+        //     // "^NSEI",
+        //     // "^NSEBANK",
+        //     // "^BSESN",
+           
+        //     // "TCS.NS"
+        // ]
+        //     } 
+        // ))
         console.log("Subscribed!");
         const root = await protobuf.load("protobuf/PricingData.proto")
         const PricingData = root.lookupType("PricingData");
@@ -180,17 +181,25 @@ app.get("/getStocks/:stock" , async(req ,res)=>{
         const buffer = Buffer.from(parsed.message, "base64");
         const decoded = PricingData.decode(buffer);
         console.log(decoded);
+        map.set(decoded.id , decoded);
+        // add the data to the hashmap
         //  now we will send this data to the frontend and for tht also we wll use a websocket
-        
+
+            
 
         // send the decoded data to all the connected clients 
         ws2.clients.forEach((client)=> {
              if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(decoded));
+        client.send(JSON.stringify({
+            type : "price-update" , 
+            data : decoded
+        }));
     }
         })
 
     });
+
+
 
     ws.on("close", () => {
         console.log("Closed");
@@ -199,5 +208,25 @@ app.get("/getStocks/:stock" , async(req ,res)=>{
     ws.on("error", (err) => {
         console.error(err);
     });
+    })
+    ws2.on("connection" , (client)=>{
+        client.on("message" , (message : any)=>{
+            const parsed = JSON.parse(message.toString());            
+            // client have sent a message that i need info of this particular stck
+            if(parsed.type === "subscribe"){
+                // if the stock is not in the hashmaps then subscribe to it , add it to the hashmaps
+            if(map.has(parsed.stock)){
+                // if it have it in the map then it is already subsctibed and we are already getting the data about it
+                return;
+            }
+            // now if it does not have it , then just subscribe to it
+                    ws.send(
+            JSON.stringify({
+                subscribe: [`${parsed.stock}`]
+            })
+);
+            }   
+            // add about unsubsribe
+        })
     })
 
