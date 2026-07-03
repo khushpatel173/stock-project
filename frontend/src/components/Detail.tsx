@@ -10,10 +10,7 @@ function Detail() {
    const lastCandleRef = useRef(null);
    const interval = '1m' // this are the default values can change as well
     // take the id from the params and then ask the backend to give data about this stock and then whatever the backend gives show it here
-    // const {id} = useParams();
-    const id = '^NSEI'
-    
-    
+    const {id} = useParams();
     const {ws}:any = useContext(WsContext);
     const [data , setData]:any = useState(null);
    const [historyData, setHistoryData] = useState([]);
@@ -105,9 +102,13 @@ function Detail() {
     // then show the data    
     <div>
         Name : {data.id}
+        <br />
         Price : {data.price}
+        <br />
         Change : {data.change}
+        <br />
         Change Percentage : {data.changePercent}
+        <br /><br /><br />
         </div>
     }
     {historyData.length>0 && <StockChart historyData={historyData}

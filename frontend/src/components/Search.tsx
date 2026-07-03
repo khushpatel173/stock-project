@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react"
+import { Link } from "react-router-dom";
 function Search() {
     const[search , setSearch] = useState("");
     const[stocks , setStocks] = useState([]);
@@ -15,7 +16,8 @@ function Search() {
                     // this will run if the user have not typed anything in 300ms
             const res = await axios.get(`http://localhost:8080/getStocks/${search}`);
             // res.data will give you the data
-            
+                console.log(res.data.stockData);
+                
                 setStocks(res.data.stockData);
             
             } catch (error) {
@@ -34,7 +36,9 @@ function Search() {
     }}/>
     <ul>
         {stocks.map((stock:any) => (
+            <Link to={`/${stock.symbol}`}>
             <li key={stock.symbol}> {stock.shortname} |||  {stock.symbol} ||| {stock.exchange} </li>
+            </Link>
         ))}
         </ul> 
     </>

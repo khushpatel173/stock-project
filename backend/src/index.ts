@@ -194,17 +194,13 @@ app.get("/history/:stock" ,async(req ,res)=>{
     ws.on("open" , async()=>{
        
         console.log("Socket Connected!");
-        // ws.send(JSON.stringify(
-        //     {
-        //        subscribe: [
-        //     // "^NSEI",
-        //     // "^NSEBANK",
-        //     // "^BSESN",
-           
-        //     // "TCS.NS"
-        // ]
-        //     } 
-        // ))
+         ws.send(JSON.stringify(
+             {
+                subscribe: [
+                "BTC-USD",
+         ]
+             } 
+         ))
         console.log("Subscribed!");
         const root = await protobuf.load("protobuf/PricingData.proto")
         const PricingData = root.lookupType("PricingData");

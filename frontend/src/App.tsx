@@ -8,6 +8,7 @@ import type { IRootState  , AppDispatch} from "../store/store"
 import Dashboard from "./components/Dashboard/Dashboard"
 import Search from "./components/Search"
 import WsContextProvider from "./contexts/WsContextProvider"
+import { Outlet } from "react-router-dom"
 function App() {
   const dispatch = useDispatch<AppDispatch>();
   const loading = useSelector((state : IRootState) => state.auth.loading);
@@ -39,7 +40,7 @@ function App() {
   return (
    <> 
    <WsContextProvider>
-    <Detail/>
+    <Outlet/>
     </WsContextProvider>
    </>
   )
