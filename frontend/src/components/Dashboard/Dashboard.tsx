@@ -1,7 +1,7 @@
 import { useState } from "react";
 import StockCard from "./StockCard";
 import { useContext } from "react";
-import WsContext from "../../contexts/wsContext";
+import WsContext from "../../contexts/WsContext";
 function Dashboard() {
     const {ws}:any = useContext(WsContext);
     const[stocks , setStocks] = useState(new Map());

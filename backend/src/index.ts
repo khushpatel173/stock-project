@@ -146,6 +146,40 @@ app.get("/getStocks/:stock" , async(req ,res)=>{
         stockData : requiredStocks
     });
 })
+
+app.get("/history/:stock" ,async(req ,res)=>{
+    const {stock} = req.params;
+    const{range , interval} = req.query;
+    const ans = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${stock}?range=${range}&interval=${interval}`);
+    const response = await ans.json();
+    const data = response.chart.result[0].indicators.quote[0];
+    const timeData = response.chart.result[0].timestamp;
+    const updatedData = [];
+    for(let i = 0; i < data['open'].length;i++){
+        if (
+    timeData[i] == null ||         
+    data.open[i] == null ||
+    data.high[i] == null ||
+    data.low[i] == null ||
+    data.close[i] == null
+) {
+    continue;
+}
+         const candleTime = Math.floor(timeData[i] / 60) * 60;
+        updatedData.push({
+            time: candleTime + 19800,
+            open: data['open'][i],
+            high: data['high'][i],
+            volume: data['volume'][i], 
+            low: data['low'][i],
+            close: data['close'][i] 
+        });
+    }
+    // give me the last candle
+    res.json({historyData : updatedData , 
+        lastCandle : updatedData[updatedData.length-1]
+    });
+})
 // if done then kaha jana he and then if fails then kaha jana he
 
 
@@ -181,6 +215,8 @@ app.get("/getStocks/:stock" , async(req ,res)=>{
         const buffer = Buffer.from(parsed.message, "base64");
         const decoded = PricingData.decode(buffer);
         console.log(decoded);
+        console.log(decoded.time.toNumber());
+        
         map.set(decoded.id , decoded);
         // add the data to the hashmap
         //  now we will send this data to the frontend and for tht also we wll use a websocket
@@ -220,11 +256,13 @@ app.get("/getStocks/:stock" , async(req ,res)=>{
                 return;
             }
             // now if it does not have it , then just subscribe to it
-                    ws.send(
-            JSON.stringify({
-                subscribe: [`${parsed.stock}`]
-            })
-);
+      if (ws.readyState === WebSocket.OPEN) {
+    ws.send(
+        JSON.stringify({
+            subscribe: [parsed.stock],
+        })
+    );
+}
             }   
             // add about unsubsribe
         })

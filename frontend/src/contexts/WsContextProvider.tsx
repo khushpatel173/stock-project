@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import WsContext from "./wsContext";
+import WsContext from "./WsContext";
 
 const WsContextProvider = ({ children }: any) => {
 
