@@ -7,17 +7,17 @@ function Header() {
   const navigate = useNavigate();
     const userStatus = useSelector((state : IRootState) => state.auth.isLoggedIn);
   return (
-    <div>
-
-        <button onClick={()=>{navigate("/dashboard")}}>Dashboard</button>
-         <button onClick={()=>{navigate("/search")}}>Search</button>
-         <button onClick={()=>{navigate("/")}}>Home</button>
-        {userStatus ? <>
-        <LogoutBtn/>
-        </> : <>
-        <button onClick={()=>{navigate("/login")}}>Login</button>
-        </>}
-    </div>
+    <header className="header">
+      <div className="header__logo" onClick={()=>{navigate("/")}}>📈 StockPulse</div>
+      <nav className="header__nav">
+        <button className="header__nav-link" onClick={()=>{navigate("/")}}>Home</button>
+        <button className="header__nav-link" onClick={()=>{navigate("/dashboard")}}>Dashboard</button>
+        <button className="header__nav-link" onClick={()=>{navigate("/search")}}>Search</button>
+      </nav>
+      <div className="header__auth">
+        {userStatus ? <LogoutBtn/> : <button className="header__auth-btn header__auth-btn--login" onClick={()=>{navigate("/login")}}>Sign In</button>}
+      </div>
+    </header>
   )
 }
 

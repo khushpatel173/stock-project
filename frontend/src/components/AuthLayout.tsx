@@ -17,7 +17,12 @@ function AuthLayout({children,authentication=true}) {
     
     if(loading){
         console.log("loading");
-        return <h1>Loading...</h1>;
+        return (
+          <div className="loading-screen">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading...</p>
+          </div>
+        );
     }
        return <>{children}</>;
 }

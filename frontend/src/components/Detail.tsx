@@ -108,29 +108,40 @@ function Detail() {
 
 
     if(loading){
-        return(<div>Loading the details...</div>)
+        return(
+          <div className="loading-screen">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading stock details...</p>
+          </div>
+        )
     }
   return (
-    <>
-    {data && 
-    // then show the data    
-    <div>
-        Name : {data.id}
-        <br />
-        Price : {data.price}
-        <br />
-        Change : {data.change}
-        <br />
-        Change Percentage : {data.changePercent}
-        <br /><br /><br />
+    <div className="detail-page">
+      {data && 
+        <div className="detail-page__header">
+          <div className="detail-page__title-group">
+            <span className="detail-page__label">Stock Details</span>
+            <h1 className="detail-page__symbol">{data.id}</h1>
+          </div>
+          <div className="detail-page__price-group">
+            <div className="detail-page__price">${typeof data.price === 'number' ? data.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : data.price}</div>
+            <div className="detail-page__change-row">
+              <span className={`detail-page__change ${data.change >= 0 ? 'detail-page__change--positive' : 'detail-page__change--negative'}`}>
+                {data.change >= 0 ? '↑' : '↓'} {typeof data.change === 'number' ? Math.abs(data.change).toFixed(2) : data.change}
+              </span>
+              <span className={`detail-page__change-badge ${data.changePercent >= 0 ? 'detail-page__change-badge--positive' : 'detail-page__change-badge--negative'}`}>
+                {data.changePercent >= 0 ? '+' : ''}{typeof data.changePercent === 'number' ? data.changePercent.toFixed(2) : data.changePercent}%
+              </span>
+            </div>
+          </div>
         </div>
-    }
-    {historyData.length>0 && <StockChart historyData={historyData}
-    liveCandle = {liveCandle}/>}
-
-
-    </>
-    
+      }
+      {historyData.length>0 && 
+        <div className="detail-page__chart-container">
+          <StockChart historyData={historyData} liveCandle={liveCandle}/>
+        </div>
+      }
+    </div>
   )
 }
 

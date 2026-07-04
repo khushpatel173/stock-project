@@ -62,21 +62,29 @@ ws.onmessage = (event:any) => {
 
 
     if(loading){
-        return (<><div>Loading the data...</div></>)
+        return (
+          <div className="loading-screen">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading market data...</p>
+          </div>
+        )
     }
   return (
-      <>
-     {Array.from(stocks.values()) .map((stock) => (
-     <Link to={`/${stock.id}`} key={stock.id}>
-     <StockCard
-        price={stock.price}
-        id={stock.id}
-        change={stock.change}
-        changePercent={stock.changePercent}
-    />
-    </Link>
-))}
-      </>
+    <div className="dashboard">
+      <div className="dashboard__header">
+        <div>
+          <h1 className="dashboard__title">Market Dashboard</h1>
+          <p className="dashboard__subtitle">Real-time cryptocurrency prices</p>
+        </div>
+      </div>
+      <div className="dashboard__grid">
+        {Array.from(stocks.values()).map((stock) => (
+          <Link to={`/${stock.id}`} key={stock.id} className="stock-card-link">
+            <StockCard price={stock.price} id={stock.id} change={stock.change} changePercent={stock.changePercent} />
+          </Link>
+        ))}
+      </div>
+    </div>
   )
 }
 

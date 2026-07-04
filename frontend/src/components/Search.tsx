@@ -30,18 +30,30 @@ function Search() {
 
     } , [search])
   return (
-    <>
-    <input type="text" placeholder="Enter stock name" value={search} onChange={(e)=>{
-        setSearch(e.target.value);
-    }}/>
-    <ul>
+    <div className="search-page">
+      <div className="search-page__header">
+        <h1 className="search-page__title">Search Stocks</h1>
+        <p className="search-page__subtitle">Find any stock, ETF, or cryptocurrency</p>
+      </div>
+      <div className="search-input-wrapper">
+        <span className="search-input-wrapper__icon">🔍</span>
+        <input className="search-input" type="text" placeholder="Search by name or symbol..." value={search} onChange={(e)=>{ setSearch(e.target.value); }}/>
+      </div>
+      <ul className="search-results">
         {stocks.map((stock:any) => (
-            <Link to={`/${stock.symbol}`}>
-            <li key={stock.symbol}> {stock.shortname} |||  {stock.symbol} ||| {stock.exchange} </li>
-            </Link>
+          <Link to={`/${stock.symbol}`} key={stock.symbol} className="search-result-item">
+            <div className="search-result-item__info">
+              <span className="search-result-item__name">{stock.shortname}</span>
+              <span className="search-result-item__symbol">{stock.symbol}</span>
+            </div>
+            <div className="search-result-item__meta">
+              <span className="search-result-item__exchange">{stock.exchange}</span>
+              <span className="search-result-item__arrow">→</span>
+            </div>
+          </Link>
         ))}
-        </ul> 
-    </>
+      </ul>
+    </div>
   )
 }
 

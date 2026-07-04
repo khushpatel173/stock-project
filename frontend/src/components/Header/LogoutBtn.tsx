@@ -9,7 +9,7 @@ function LogoutBtn() {
         dispatch(logout());
     }
   return (
-    <button onClick={onLogout}>Logout</button>
+    <button className="header__auth-btn header__auth-btn--logout" onClick={onLogout}>Logout</button>
   )
 }
 

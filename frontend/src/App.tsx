@@ -35,7 +35,12 @@ function App() {
   } , [])
 
     if(loading){
-      return (<p>Loading....</p>)
+      return (
+        <div className="loading-screen">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">Loading StockPulse...</p>
+        </div>
+      )
     }
   return (
    <> 
