@@ -194,13 +194,13 @@ app.get("/history/:stock" ,async(req ,res)=>{
     ws.on("open" , async()=>{
        
         console.log("Socket Connected!");
-         ws.send(JSON.stringify(
-             {
-                subscribe: [
-                "BTC-USD",
-         ]
-             } 
-         ))
+        //  ws.send(JSON.stringify(
+        //      {
+        //         subscribe: [
+        //         "BTC-USD",
+        //  ]
+        //      } 
+        //  ))
         console.log("Subscribed!");
         const root = await protobuf.load("protobuf/PricingData.proto")
         const PricingData = root.lookupType("PricingData");
@@ -255,12 +255,25 @@ app.get("/history/:stock" ,async(req ,res)=>{
       if (ws.readyState === WebSocket.OPEN) {
     ws.send(
         JSON.stringify({
-            subscribe: [parsed.stock],
+            subscribe: parsed.stock,
         })
     );
 }
             }   
             // add about unsubsribe
+            else if(parsed.type === 'unsubscribe'){
+                   if(map.has(parsed.stock)){
+                map.delete(parsed.stock);
+            }
+            // now if it does not have it , then just subscribe to it
+      if (ws.readyState === WebSocket.OPEN) {
+    ws.send(
+        JSON.stringify({
+            unsubscribe: parsed.stock,
+        })
+    );
+}
+            }
         })
     })
 

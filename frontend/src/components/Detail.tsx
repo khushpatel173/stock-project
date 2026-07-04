@@ -15,6 +15,7 @@ function Detail() {
     const [data , setData]:any = useState(null);
    const [historyData, setHistoryData] = useState([]);
    const [liveCandle, setLiveCandle] = useState(null);
+   const [loading , setLoading] = useState(true);
      const updateCurrentCandle = (price)=>{
         if(!lastCandleRef.current){
             return;
@@ -63,16 +64,24 @@ function Detail() {
             }
             
             setData(res.data);
+            if(loading == true){
+            setLoading(false);
+            }
         }
         }
         const subscribe = ()=>{
             ws.send(JSON.stringify({
             type : "subscribe" , 
-            stock : id 
+            stock : [id] 
         }));
         }
         ws.addEventListener("message" , handleEvent);
+        if(ws.readyState === WebSocket.OPEN){
+            subscribe();
+        }
+        else{
         ws.addEventListener("open", subscribe, { once: true });
+        }
 
 
         // get the historic data
@@ -91,11 +100,16 @@ function Detail() {
              ws.send(
             JSON.stringify({
                 type: "unsubscribe",
-                stock: id,
+                stock: [id],
             })
         );}
         }
     } , [id , ws])
+
+
+    if(loading){
+        return(<div>Loading the details...</div>)
+    }
   return (
     <>
     {data && 
