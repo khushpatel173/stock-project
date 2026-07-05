@@ -141,7 +141,8 @@ app.get("/getStocks/:stock" , async(req ,res)=>{
     //  now search for this stock
     const response = await fetch(`https://query2.finance.yahoo.com/v1/finance/search?q=${stock}`);
     const ans = await response.json();
-    const requiredStocks = ans.quotes.filter((stock:any) => (stock.symbol.endsWith(".BO") || stock.symbol.endsWith(".NS")));
+    // const requiredStocks = ans.quotes.filter((stock:any) => (stock.symbol.endsWith(".BO") || stock.symbol.endsWith(".NS")));
+    const requiredStocks = ans.quotes;
     res.json({
         stockData : requiredStocks
     });
@@ -176,6 +177,8 @@ app.get("/history/:stock" ,async(req ,res)=>{
         });
     }
     // give me the last candle
+    console.log(updatedData[updatedData.length-1]);
+    
     res.json({historyData : updatedData , 
         lastCandle : updatedData[updatedData.length-1]
     });
@@ -211,14 +214,9 @@ app.get("/history/:stock" ,async(req ,res)=>{
         const buffer = Buffer.from(parsed.message, "base64");
         const decoded = PricingData.decode(buffer);
         console.log(decoded);
-        console.log(decoded.time.toNumber());
-        
-        map.set(decoded.id , decoded);
+        // console.log(decoded.time.toNumber());
         // add the data to the hashmap
         //  now we will send this data to the frontend and for tht also we wll use a websocket
-
-            
-
         // send the decoded data to all the connected clients 
         ws2.clients.forEach((client)=> {
              if (client.readyState === WebSocket.OPEN) {
@@ -243,36 +241,49 @@ app.get("/history/:stock" ,async(req ,res)=>{
     })
     ws2.on("connection" , (client)=>{
         client.on("message" , (message : any)=>{
-            const parsed = JSON.parse(message.toString());            
+            const parsed = JSON.parse(message.toString());  
+            // console.log(parsed);  
             // client have sent a message that i need info of this particular stck
             if(parsed.type === "subscribe"){
-                // if the stock is not in the hashmaps then subscribe to it , add it to the hashmaps
-            if(map.has(parsed.stock)){
-                // if it have it in the map then it is already subsctibed and we are already getting the data about it
-                return;
-            }
-            // now if it does not have it , then just subscribe to it
-      if (ws.readyState === WebSocket.OPEN) {
+                parsed.stock.map((stock , index) => {
+                      if(map.has(stock)){
+                         map.set(stock , map.get(stock) + 1);
+                        return stock;
+                    }
+                        if (ws.readyState === WebSocket.OPEN) {
+                             map.set(stock ,1);
     ws.send(
         JSON.stringify({
-            subscribe: parsed.stock,
+            subscribe: [stock],
         })
     );
-}
-            }   
+}  
+                    return stock;
+                })
+        } 
             // add about unsubsribe
             else if(parsed.type === 'unsubscribe'){
-                   if(map.has(parsed.stock)){
-                map.delete(parsed.stock);
+                console.log("Before" , map);
+                parsed.stock.map((stock , index) =>{
+                    if(map.has(stock)){
+                        map.set(stock , map.get(stock) - 1);
+                    }
+                     if(!map.has(stock) || map.get(stock) > 0){
+                // then dont unsubscribe
+                return stock;
             }
-            // now if it does not have it , then just subscribe to it
-      if (ws.readyState === WebSocket.OPEN) {
+            if (ws.readyState === WebSocket.OPEN) {
+                map.delete(stock);
     ws.send(
         JSON.stringify({
-            unsubscribe: parsed.stock,
+            unsubscribe: [stock],
         })
     );
 }
+                    return stock;
+                })
+                console.log("Before" , map);
+                
             }
         })
     })
