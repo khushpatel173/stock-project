@@ -3,7 +3,8 @@ import {createSlice} from '@reduxjs/toolkit'
 const initialState = {
     isLoggedIn : false , 
     userData : null , 
-    loading : true
+    loading : true , 
+    balance : 0
 }
 
 const authSlice = createSlice({
@@ -20,9 +21,15 @@ const authSlice = createSlice({
         } , 
          setLoading : (state)=>{
             state.loading = false;
+        } , 
+        buy : (state , action)=>{
+            state.balance = state.balance - action.payload.amount;
+        } , 
+        sell : (state , action)=>{
+            state.balance = state.balance + action.payload.amount
         }
     }
 })
 
 export default authSlice.reducer
-export const {login , logout , setLoading} = authSlice.actions
+export const {login , logout , setLoading , buy ,sell} = authSlice.actions

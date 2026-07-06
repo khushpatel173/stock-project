@@ -17,7 +17,11 @@ function Dashboard() {
         }));
         }
         const handleMessage = (event:any)=>{
+
+        
               const data = JSON.parse(event.data);
+            
+      if(!defaultStocks.includes(data.data.id)){return}
     setStocks((prev) => {
       const updated = new Map(prev);
       updated.set(data.data.id , data.data);

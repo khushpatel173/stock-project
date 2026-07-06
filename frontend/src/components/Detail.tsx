@@ -4,6 +4,7 @@ import {useParams} from 'react-router-dom'
 import { useContext } from 'react';
 import WsContext from '../contexts/WsContext';
 import { AdvancedRealTimeChart } from "react-ts-tradingview-widgets";
+import stockService from '../services/stock';
 import StockChart from './StockChart';
 function Detail() {
    const range = '1d'
@@ -11,6 +12,9 @@ function Detail() {
    const interval = '1m' // this are the default values can change as well
     // take the id from the params and then ask the backend to give data about this stock and then whatever the backend gives show it here
     const {id} = useParams();
+    const [form_buy , setFormBuy] = useState(false);
+    const [form_sell , setFormSell] = useState(false);
+    const [qty , setQty] = useState(1);
     const {ws}:any = useContext(WsContext);
     const [data , setData]:any = useState(null);
    const [historyData, setHistoryData] = useState([]);
@@ -21,9 +25,9 @@ function Detail() {
             return;
         }
          const updatedCandle = {
-            ...lastCandleRef.current , 
-            high : Math.max(price , lastCandleRef.current.high) , 
-            low : Math.min(price , lastCandleRef.current.low) , 
+            ...lastCandleRef.current,
+            high : Math.max(price , lastCandleRef.current.high),
+            low : Math.min(price , lastCandleRef.current.low),
             close : price
          };
          lastCandleRef.current = updatedCandle
@@ -62,7 +66,6 @@ function Detail() {
             else{
                 createNewCandle(res.data.price ,candleTime )
             }
-            
             setData(res.data);
             if(loading == true){
             setLoading(false);
@@ -91,6 +94,15 @@ function Detail() {
            lastCandleRef.current = response.data.lastCandle;
            setLiveCandle(response.data.lastCandle);
             setHistoryData(response.data.historyData);
+          const last_price = response.data.lastCandle.close;
+          setData({
+            id : id , 
+            price : last_price ,
+            change : 0,
+            changePercent : 0 , 
+            text : "Last traded Price"
+          });
+          setLoading(false);
         }
         getData();
         return ()=>{
@@ -126,16 +138,83 @@ function Detail() {
           <div className="detail-page__price-group">
             <div className="detail-page__price">${typeof data.price === 'number' ? data.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : data.price}</div>
             <div className="detail-page__change-row">
-              <span className={`detail-page__change ${data.change >= 0 ? 'detail-page__change--positive' : 'detail-page__change--negative'}`}>
+              
+          {data.text ? <span>Last Traded Price</span> : <>
+          <span className={`detail-page__change ${data.change >= 0 ? 'detail-page__change--positive' : 'detail-page__change--negative'}`}>
                 {data.change >= 0 ? '↑' : '↓'} {typeof data.change === 'number' ? Math.abs(data.change).toFixed(2) : data.change}
               </span>
               <span className={`detail-page__change-badge ${data.changePercent >= 0 ? 'detail-page__change-badge--positive' : 'detail-page__change-badge--negative'}`}>
                 {data.changePercent >= 0 ? '+' : ''}{typeof data.changePercent === 'number' ? data.changePercent.toFixed(2) : data.changePercent}%
               </span>
+              <span>Live</span>
+
+              <button onClick={()=>{
+                setFormBuy(true);
+                setFormSell(false);
+              }}>Buy</button>
+              <button onClick={()=>{
+                setFormSell(true);
+                setFormBuy(false);
+              }}>Sell</button>
+          </>}
             </div>
           </div>
         </div>
       }
+
+      {form_buy && <>
+        Quantity : <input type="text" placeholder='Quantity' value={qty} onChange={(e)=>{
+            setQty(Number(e.target.value));
+        }}/>
+        <p>Last Traded Price : {data.price} </p>
+<br />
+Quantity : {qty}
+ <p> Estimated Total :{qty * data.price}</p>
+ 
+<button onClick={()=>{
+  setFormBuy(false);
+}
+}>Cancel</button>
+<button onClick={async()=>{
+  try {
+   const res =  await stockService.buy(data.id , qty);
+   console.log(res);
+   if(res){
+    alert("Successfully purchased");
+   }
+  } catch (error) {
+    console.log("error :" , error.message);  
+  }
+}}>Buy</button>
+      </>}
+      {
+        form_sell && <>
+    Quantity : <input type="text" placeholder='Quantity' value={qty} onChange={(e)=>{
+            setQty(Number(e.target.value));
+        }}/>
+        <p>Last Traded Price : {data.price} </p>
+<br />
+Quantity : {qty}
+ <p> Estimated Total :{qty * data.price}</p>
+ 
+<button onClick={()=>{
+  setFormSell(false);
+}
+}>Cancel</button>
+<button onClick={async()=>{
+  try {
+   const res =  await stockService.sell(data.id , qty);
+   console.log(res);
+   if(res){
+    alert("Successfully Sold");
+   }
+  } catch (error) {
+    console.log("error :" , error.message);  
+  }
+}}>Sell</button>
+        </>
+      }
+
       {historyData.length>0 && 
         <div className="detail-page__chart-container">
           <StockChart historyData={historyData} liveCandle={liveCandle}/>

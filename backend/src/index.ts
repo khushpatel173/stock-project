@@ -1,5 +1,6 @@
 import express from 'express';
 import passport from 'passport';
+import Port from './models/Port.js';
 import { Strategy} from 'passport-google-oauth20';
 import mongoose from 'mongoose';
 import User from './models/User.js';
@@ -13,6 +14,7 @@ import protobuf from 'protobufjs'
 import http from 'http'
 const app = express();
  const map = new Map();
+ const priceMap = new Map();
    const server = http.createServer(app);
 
 app.use(express.json());
@@ -56,6 +58,7 @@ if (!email) {
     picture: picture ?? "",
 });
     }
+
     done(null, user);
     } catch (error) {
          done(error as Error);
@@ -83,8 +86,18 @@ app.get(
         session: false,
         failureRedirect : "http://localhost:5173/"
     }),
-    (req, res) => {
+    async(req, res) => {
         // now the user is logged in so add the jwt
+
+        // make a portfolio and add the user 
+    const portfolio = new Port({
+            owner : req.user?._id
+    });
+    await portfolio.save();
+    const user = await User.findById(req.user?._id);
+    await user?.updateOne({
+        portfolio : portfolio._id
+    });
      const token = jwt.sign({
         userId : req.user?._id
      } , "secret" , {
@@ -183,6 +196,198 @@ app.get("/history/:stock" ,async(req ,res)=>{
         lastCandle : updatedData[updatedData.length-1]
     });
 })
+
+app.get("/buy/:stock" , async(req ,res)=>{
+    const {stock} = req.params;
+    const {qty} = req.query;
+    // now we need the latest price of the stocks
+    const price = priceMap.get(stock);
+    if(!price){ // that means no stock is found that means no live data
+        return res.status(404).json({
+        message: "No live data available for this stock",
+    });
+    }
+    // now check if the user have enough balance to buy the stock
+
+        try {
+            const token = req.cookies.token;
+   if (!token) {
+            return res.status(401).json({
+                message: "Not authenticated"
+            });
+        }
+         const decoded : any = jwt.verify(
+            token,
+            "secret"
+        );
+        const user = await User.findById(decoded.userId);
+        if(!user){
+             return res.status(404).json({
+                message: "User not found"
+            });
+        }
+        // now we have the user as well so check its balance
+        const userBalance = user.balanceLeft;
+        if(userBalance < Number(qty) * price){
+            // insuffiecient balance
+            return res.status(404).json({
+                message: "Insufficient Balance"
+            });
+        }
+
+        // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
+
+        // add the stock to the portfolio and reduce the balance
+          const portfolio = await Port.findOne({
+            owner : user._id
+        });
+        if(!portfolio){
+            return res.status(404).json({
+                message: "Portfolio Not Found"
+            });
+        }
+
+        await user.updateOne({
+            balanceLeft : userBalance - (Number(qty) * price)
+        });
+        // then add this to portfolio
+
+    //    portfolio.stocks.push({
+    //             name : stock , 
+    //             qty : Number(qty) , 
+    //             buy : price ,
+    //             purchasedDate : new Date()
+    //         });
+        const index = portfolio.stocks.findIndex(obj => obj.name == stock);
+        if(index == -1){
+            // then this stock is not there just push
+               portfolio.stocks.push({
+                name : stock , 
+                qty : Number(qty) , 
+                buy : price ,
+                purchasedDate : new Date()
+            });
+        }else{
+            const holding = portfolio.stocks[index];
+            const oldQty = holding?.qty;
+            const oldAvg = holding?.buy;
+            const newAvg = ((oldQty! * oldAvg!) + (Number(qty) * price))/(Number(qty) + oldQty!);
+            portfolio.stocks[index] = {
+                name : stock , 
+                qty : oldQty! + Number(qty),
+                buy : newAvg , 
+                purchasedDate : new Date()
+            }
+        }
+        // that means it already have that then we need to change the avg price and qty
+
+    
+            await portfolio.save();
+            // now the order has been placeddd
+            res.status(201).json({
+                message : "Order places successfully" , 
+                orderedPrice : price , 
+                orderedQty : Number(qty) , 
+            })
+        } catch (error) {
+            return res.status(401).json({
+                message : "Some error"
+            })}
+})
+
+app.get("/sell/:stock" , async(req ,res)=>{
+    const {stock} = req.params;
+    const {qty} = req.query;
+    // now we need the latest price of the stocks
+    const price = priceMap.get(stock);
+    if(!price){ // that means no stock is found that means no live data
+        return res.status(404).json({
+        message: "No live data available for this stock",
+    });
+    }
+    // now check if the user have enough balance to buy the stock
+
+        try {
+            const token = req.cookies.token;
+   if (!token) {
+            return res.status(401).json({
+                message: "Not authenticated"
+            });
+        }
+         const decoded : any = jwt.verify(
+            token,
+            "secret"
+        );
+        const user = await User.findById(decoded.userId);
+        if(!user){
+             return res.status(404).json({
+                message: "User not found"
+            });
+        }
+        // now we have the user as well so check its balance
+        const userBalance = user.balanceLeft;
+        // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
+
+        // add the stock to the portfolio and reduce the balance
+          const portfolio = await Port.findOne({
+            owner : user._id
+        });
+        if(!portfolio){
+            return res.status(404).json({
+                message: "Portfolio Not Found"
+            });
+        }
+
+        
+    //    portfolio.stocks.push({
+    //             name : stock , 
+    //             qty : Number(qty) , 
+    //             buy : price ,
+    //             purchasedDate : new Date()
+    //         });
+    const index = portfolio.stocks.findIndex(obj => obj.name == stock);
+    if(index == -1){
+        // that means we dont have this stock
+        return res.status(401).json({
+                message : "You dont have this stock"
+            })}
+            // that means we have this stock now check if we have enought qty
+            if(Number(qty) > portfolio.stocks[index].qty){
+                return res.status(401).json({
+                message : "You dont have enough quantity of this stock"
+            })
+            }
+
+            // now you have enought qty so you can sell
+            // we will dec the qty of the stock and if the qty becomes zero we will remove it
+            const oldQty = portfolio.stocks[index]?.qty;
+            const oldPrice = portfolio.stocks[index]?.buy;
+            portfolio.stocks[index] = {
+                name : stock , 
+                qty : oldQty - Number(qty),
+                buy : oldPrice , 
+                purchasedDate : portfolio.stocks[index]?.purchasedDate
+            };
+
+            if(portfolio.stocks[index]?.qty == 0){
+                portfolio.stocks.splice(index , 1);
+            }
+            await portfolio.save();
+
+            await user.updateOne({
+            balanceLeft : userBalance + (Number(qty) * price)
+        });
+            // now the order has been placeddd
+            res.status(201).json({
+                message : "Stock Sold successfully" , 
+                soldPrice : price , 
+                soldQty : Number(qty) , 
+            })
+        } catch (error) {
+            return res.status(401).json({
+                message : "Some error"
+            })}
+})
 // if done then kaha jana he and then if fails then kaha jana he
 
 
@@ -214,6 +419,7 @@ app.get("/history/:stock" ,async(req ,res)=>{
         const buffer = Buffer.from(parsed.message, "base64");
         const decoded = PricingData.decode(buffer);
         console.log(decoded);
+        priceMap.set(decoded.id , decoded.price);
         // console.log(decoded.time.toNumber());
         // add the data to the hashmap
         //  now we will send this data to the frontend and for tht also we wll use a websocket
@@ -274,6 +480,7 @@ app.get("/history/:stock" ,async(req ,res)=>{
             }
             if (ws.readyState === WebSocket.OPEN) {
                 map.delete(stock);
+                priceMap.delete(stock);
     ws.send(
         JSON.stringify({
             unsubscribe: [stock],
