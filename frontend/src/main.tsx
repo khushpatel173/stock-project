@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './App.css'
@@ -13,6 +13,8 @@ import Detail from './components/Detail.tsx'
 import Header from './components/Header/Header.tsx'
 import AuthLayout from './components/AuthLayout.tsx'
 import Login from './components/Header/Login.tsx'
+import Portfolio from './pages/Portfolio.tsx'
+import Profile from './pages/Profile.tsx'
 const router = createBrowserRouter([
   {
     path: "/" , 
@@ -60,6 +62,24 @@ const router = createBrowserRouter([
          <Login/>
          </AuthLayout>
          </>
+      } , 
+      {
+        path : "/portfolio" , 
+        element :<>
+        <AuthLayout authentication={true}>
+         <Header/>
+         <Portfolio/>
+         </AuthLayout>
+         </>
+      } , 
+       {
+        path : "/profile" , 
+        element :<>
+        <AuthLayout authentication={true}>
+         <Header/>
+         <Profile/>
+         </AuthLayout>
+         </>
       }
     ]
   }
@@ -67,9 +87,7 @@ const router = createBrowserRouter([
 
 
 createRoot(document.getElementById('root')!).render(
-    <StrictMode>
     <Provider store={store}>
   <RouterProvider router={router}/>
     </Provider>
-  </StrictMode>,
 )

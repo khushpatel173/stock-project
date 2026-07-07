@@ -288,7 +288,8 @@ app.get("/buy/:stock" , async(req ,res)=>{
                 message : "Order places successfully" , 
                 orderedPrice : price , 
                 orderedQty : Number(qty) , 
-            })
+                user : user
+            });
         } catch (error) {
             return res.status(401).json({
                 message : "Some error"
@@ -382,11 +383,44 @@ app.get("/sell/:stock" , async(req ,res)=>{
                 message : "Stock Sold successfully" , 
                 soldPrice : price , 
                 soldQty : Number(qty) , 
+                user : user
             })
         } catch (error) {
             return res.status(401).json({
                 message : "Some error"
             })}
+})
+
+app.get("/portfolio" , async(req ,res)=>{
+    // take the logged in user and give the portfolio
+
+      const token = req.cookies.token;
+   if (!token) {
+            return res.status(401).json({
+                message: "Not authenticated"
+            });
+        }
+         const decoded : any = jwt.verify(
+            token,
+            "secret"
+        );
+        const user = await User.findById(decoded.userId);
+        if(!user){
+             return res.status(404).json({
+                message: "User not found"
+            });
+        }
+        // fetch the portfolio of the user
+        const portfolio = await Port.findById(user.portfolio);
+        if(!portfolio){
+             return res.status(404).json({
+                message: "PortFolio cant be fetched"
+            });
+        }
+       res.status(201).json({
+        portfolio : portfolio
+       });
+
 })
 // if done then kaha jana he and then if fails then kaha jana he
 

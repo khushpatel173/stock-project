@@ -34,19 +34,21 @@ function Dashboard() {
 useEffect(()=>{
   
 
-ws.onmessage = (event:any) => {
-    // console.log(JSON.parse(event.data));
-    handleMessage(event);
-};
+// ws.onmessage = (event:any) => {
+//     // console.log(JSON.parse(event.data));
+//     handleMessage(event);
+// };
+      ws.addEventListener("message" , handleMessage);
     // as soon as the page loads give the backend a msg to send the subscribe data
         if(ws.readyState === WebSocket.OPEN){
             subscribe();
         }
         else{
-      ws.onopen = () => {
-    console.log("Connected to backend");
-    subscribe();
-};
+//       ws.onopen = () => {
+//     console.log("Connected to backend");
+//     subscribe();
+// };
+          ws.addEventListener("open" , subscribe);
         }
 
     return ()=>{

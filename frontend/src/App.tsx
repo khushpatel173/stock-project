@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import {login, logout , setLoading} from '../store/authSlice'
+import {login, logout , setLoading, updateBalance} from '../store/authSlice'
 import authService from "./services/auth"
 import Detail from "./components/Detail"
 import Header from "./components/Header/Header"
@@ -20,7 +20,6 @@ function App() {
         // that means not logged in so do nothing as that is also by default
         return null;
       }
-
       // else we have the user then just store that user in the store
       dispatch(login(user));
         } catch (error) {

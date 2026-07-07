@@ -4,7 +4,6 @@ const initialState = {
     isLoggedIn : false , 
     userData : null , 
     loading : true , 
-    balance : 0
 }
 
 const authSlice = createSlice({
@@ -22,14 +21,12 @@ const authSlice = createSlice({
          setLoading : (state)=>{
             state.loading = false;
         } , 
-        buy : (state , action)=>{
-            state.balance = state.balance - action.payload.amount;
-        } , 
-        sell : (state , action)=>{
-            state.balance = state.balance + action.payload.amount
+        updateBalance : (state , action)=>{
+            // state.balance = action.payload.balance
+            state.userData = action.payload
         }
     }
 })
 
 export default authSlice.reducer
-export const {login , logout , setLoading , buy ,sell} = authSlice.actions
+export const {login , logout , setLoading , updateBalance} = authSlice.actions
