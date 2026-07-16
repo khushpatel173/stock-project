@@ -90,12 +90,10 @@ function Detail() {
         else{
         ws.addEventListener("open", subscribe, { once: true });
         }
-
-
         // get the historic data
-
-        const getData = async()=>{
-            const response = await axios.get(`http://localhost:8080/history/${id}?range=${range}&interval=${interval}`);
+           const getData = async()=>{
+            try {
+               const response = await axios.get(`http://localhost:8080/history/${id}?range=${range}&interval=${interval}`);
            console.log(response.data.historyData);
             lastCandleRef.current = response.data.lastCandle;
            setLiveCandle(response.data.lastCandle);
@@ -109,8 +107,13 @@ function Detail() {
             text : "Last traded Price"
           });
           setLoading(false);
+            } catch (error) {
+              console.log("Something went wrong")
+            }
+           
         }
         getData();
+      
         return ()=>{
             ws.removeEventListener("message", handleEvent);
             ws.removeEventListener("open", subscribe);
@@ -276,7 +279,7 @@ function Detail() {
         </div>
       </div>}
 
-      {historyData.length>0 && 
+      {historyData.length > 0 && 
         <div className="detail-page__chart-container">
           <StockChart historyData={historyData} liveCandle={liveCandle}/>
         </div>

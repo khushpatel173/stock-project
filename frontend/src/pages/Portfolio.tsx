@@ -14,7 +14,7 @@ function Portfolio() {
     portfolio.forEach((value , key) =>{
         totalInvested+= (value.buy * value.qty)
     });
-     let currentValue = 0;
+    let currentValue = 0;
     portfolio.forEach((value , key) =>{
         currentValue+= (value.ltp * value.qty);
     });
@@ -34,6 +34,7 @@ function Portfolio() {
         if(!prev.has(data.data.id)){
             return prev;
         }
+          
             const updated = new Map(prev);
             updated.set(data.data.id , {
                 ...updated.get(data.data.id) ,
@@ -60,22 +61,14 @@ function Portfolio() {
              setPortfolio(newMap);
              
             // subscribe
-            const stocknames = portfolio.map((stock) => (stock.name));
+            // const stocknames = portfolio.map((stock) => (stock.name));
             ws.addEventListener("message" ,handleMessage);
               if(ws.readyState === WebSocket.OPEN){
-            subscribe(stocknames);
+            subscribe(stockNames.current);
         }
         else{
-//       ws.onopen = () => {
-//     console.log("Connected to backend");
-//     subscribe(stocknames);
-// };
-ws.addEventListener("open" , ()=>{subscribe(stocknames)});
+ws.addEventListener("open" , ()=>{subscribe(stockNames.current)});
         }
-
-    // ws.onmessage = (event:any) =>{
-    //      handleMessage(event);
-    //     }
     }
         // now they are also subscribed
         getPort();

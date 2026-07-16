@@ -1,13 +1,17 @@
 import { useSelector } from "react-redux"
 import authService from "../services/auth"
+import { useEffect } from "react";
 function Profile() {
-    const user = useSelector((state) => state.auth.userData);
+    let user = useSelector((state) => state.auth.userData);
     
   return (
     <div className="profile-page">
       <div className="profile-page__header">
         <span className="profile-page__label">Account</span>
         <h1 className="profile-page__title">Your Profile</h1>
+        <button className="profile-page__title" onClick={()=>{
+          window.location.reload();
+        }}>Refresh</button>
       </div>
 
       <div className="profile-page__content">
