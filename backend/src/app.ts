@@ -7,6 +7,7 @@ import User from './models/User.js';
 import jwt from 'jsonwebtoken'
 import { priceMap } from './services/map.js';
 import { authMiddleware } from './middleware/auth.js';
+import { time } from 'console';
 
 const app = express();
 
@@ -117,7 +118,9 @@ app.get("/history/:stock" ,async(req ,res)=>{
             message : "There is no enough data available"
         });
     } 
-    const timeData = response.chart.result[0].timestamp;
+    let timeData = response.chart.result[0].timestamp;
+    timeData = [...new Set(timeData)];
+    
     const updatedData = [];
     for(let i = 0; i < data['open'].length;i++){
         if (
@@ -125,11 +128,13 @@ app.get("/history/:stock" ,async(req ,res)=>{
     data.open[i] == null ||
     data.high[i] == null ||
     data.low[i] == null ||
-    data.close[i] == null
-) {
+    data.close[i] == null) {
     continue;
 }
          const candleTime = Math.floor(timeData[i] / 60) * 60;
+        if( updatedData.length>1 && candleTime == updatedData[updatedData.length-1].time - 19800){
+        continue;            
+        }
         updatedData.push({
             time: candleTime + 19800,
             open: data['open'][i],

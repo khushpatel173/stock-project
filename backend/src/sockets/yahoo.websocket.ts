@@ -26,6 +26,7 @@ export function initWebSocket (server:any){
             const decoded = PricingData.decode(buffer);
             console.log(decoded);
             priceMap.set(decoded.id , decoded.price);
+            // setPrice(decoded.id , decoded.price);
             // console.log(decoded.time.toNumber());
             // add the data to the hashmap
             //  now we will send this data to the frontend and for tht also we wll use a websocket

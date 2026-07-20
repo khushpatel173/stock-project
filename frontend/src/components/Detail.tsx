@@ -54,7 +54,7 @@ function Detail() {
         // send the data to backend to subscribe to this stock and then via the ws whenever we receive the message of this stock then set the data to it
       const handleEvent = (message:any)=>{
  const res = JSON.parse(message.data);
-        if( res.type === 'price-update' && res.data?.id === id){
+        if(res.type === 'price-update' && res.data?.id === id){
             // make sure that the data you received is of the same candle or different
             const timeData = res.data.time;  // this is the time which we get from the ws
             // now check if the minute matches with the last candle or not
