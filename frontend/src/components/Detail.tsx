@@ -209,7 +209,7 @@ function Detail() {
             }}>Cancel</button>
             <button className="trade-modal__btn trade-modal__btn--confirm trade-modal__btn--buy" onClick={async()=>{
               try {
-               const res =  await stockService.buy(data.id , qty);
+               const res =  await stockService.buy(data.id , qty , qty*data.price);
                console.log(res);
                if(res){
                 alert("Successfully purchased");
@@ -262,9 +262,10 @@ function Detail() {
             }}>Cancel</button>
             <button className="trade-modal__btn trade-modal__btn--confirm trade-modal__btn--sell" onClick={async()=>{
               try {
-               const res =  await stockService.sell(data.id , qty);
+               const res =  await stockService.sell(data.id , qty , qty*data.price);
                console.log(res);
                if(res){
+                
                 alert("Successfully Sold");
                }
                 setFormSell(false);

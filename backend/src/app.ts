@@ -7,7 +7,8 @@ import User from './models/User.js';
 import jwt from 'jsonwebtoken'
 import { priceMap } from './services/map.js';
 import { authMiddleware } from './middleware/auth.js';
-import { time } from 'console';
+import {buyStock, sellStock} from './services/order.services.js'
+import Order from './models/Order.js';
 
 const app = express();
 
@@ -152,96 +153,59 @@ app.get("/history/:stock" ,async(req ,res)=>{
     });
 })
 
-app.get("/buy/:stock" , authMiddleware ,  async(req ,res)=>{
-    const {stock} = req.params;
+app.post("/buy/:stock" , authMiddleware ,  async(req ,res)=>{
+
+    try {
+        const {stock} = req.params;
     const {qty} = req.query;
     // now we need the latest price of the stocks
     const price = priceMap.get(stock);
+    const {reqPrice} = req.body;
     if(!price){ // that means no stock is found that means no live data
         return res.status(404).json({
         message: "No live data available for this stock",
     });
-    }
-    // now check if the user have enough balance to buy the stock
+}
 
-        try {
-        const user = req.user;
+const user = req.user;
         if(!user){
              return res.status(404).json({
                 message: "User not found"
             });
         }
-        // now we have the user as well so check its balance
-        const userBalance = user.balanceLeft;
-        if(userBalance < Number(qty) * price){
-            // insuffiecient balance
-            return res.status(404).json({
-                message: "Insufficient Balance"
-            });
-        }
 
-        // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
-
-        // add the stock to the portfolio and reduce the balance
-          const portfolio = await Port.findOne({
-            owner : user._id
-        });
-        if(!portfolio){
-            return res.status(404).json({
-                message: "Portfolio Not Found"
-            });
-        }
-        user.balanceLeft = userBalance - (Number(qty) * price);
-        await user.save();
-        // then add this to portfolio
-
-    //    portfolio.stocks.push({
-    //             name : stock , 
-    //             qty : Number(qty) , 
-    //             buy : price ,
-    //             purchasedDate : new Date()
-    //         });
-        const index = portfolio.stocks.findIndex(obj => obj.name == stock);
-        if(index == -1){
-            // then this stock is not there just push
-               portfolio.stocks.push({
-                name : stock , 
-                qty : Number(qty) , 
-                buy : price ,
-                purchasedDate : new Date()
-            });
-        }else{
-            const holding = portfolio.stocks[index];
-            const oldQty = holding?.qty;
-            const oldAvg = holding?.buy;
-            const newAvg = ((oldQty! * oldAvg!) + (Number(qty) * price))/(Number(qty) + oldQty!);
-            portfolio.stocks[index] = {
-                name : stock , 
-                qty : oldQty! + Number(qty),
-                buy : newAvg , 
-                purchasedDate : new Date()
+        const order = new Order(
+            {
+        user : user._id , 
+        type : "BUY" , 
+        status : "PENDING" , 
+        createdAt : Date.now() , 
+        symbol : stock , 
+        requestedPrice : reqPrice , 
+        orderType : "Market" 
             }
-        }
-        // that means it already have that then we need to change the avg price and qty
-
-    
-            await portfolio.save();
-            // now the order has been placeddd
-            res.status(201).json({
+        );
+        await order.save();
+    await buyStock(user , stock , qty , price , order);
+         res.status(201).json({
                 message : "Order places successfully" , 
                 orderedPrice : price , 
                 orderedQty : Number(qty) , 
                 user : user
             });
-        } catch (error) {
-            return res.status(401).json({
-                message : "Some error"
-            })}
+    } catch (error) {
+        
+      res.status(401).json({
+               error : "Some error occured"
+            });  
+    }
 })
 
-app.get("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
-    const {stock} = req.params;
+app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
+    try {
+        const {stock} = req.params;
     const {qty} = req.query;
+    const {reqPrice} = req.body;
     // now we need the latest price of the stocks
     const price = priceMap.get(stock);
     if(!price){ // that means no stock is found that means no live data
@@ -250,83 +214,35 @@ app.get("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
     });
     }
     // now check if the user have enough balance to buy the stock
-
-        try {
-           
-        const user = req.user;
+          const user = req.user;
         if(!user){
              return res.status(404).json({
                 message: "User not found"
             });
         }
-        // now we have the user as well so check its balance
-        const userBalance = user.balanceLeft;
-        // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
-
-        // add the stock to the portfolio and reduce the balance
-          const portfolio = await Port.findOne({
-            owner : user._id
-        });
-        if(!portfolio){
-            return res.status(404).json({
-                message: "Portfolio Not Found"
-            });
-        }
-
-        
-    //    portfolio.stocks.push({
-    //             name : stock , 
-    //             qty : Number(qty) , 
-    //             buy : price ,
-    //             purchasedDate : new Date()
-    //         });
-    const index = portfolio.stocks.findIndex(obj => obj.name == stock);
-    if(index == -1){
-        // that means we dont have this stock
-        return res.status(401).json({
-                message : "You dont have this stock"
-            })}
-            // that means we have this stock now check if we have enought qty
-            if(Number(qty) > portfolio.stocks[index].qty){
-                return res.status(401).json({
-                message : "You dont have enough quantity of this stock"
-            })
+         const order = new Order(
+            {
+        user : user._id , 
+        type : "SELL" , 
+        status : "PENDING" , 
+        createdAt : Date.now() , 
+        symbol : stock , 
+        requestedPrice : reqPrice , 
+        orderType : "Market" 
             }
-
-            // now you have enought qty so you can sell
-            // we will dec the qty of the stock and if the qty becomes zero we will remove it
-            const oldQty = portfolio.stocks[index]?.qty;
-            const oldPrice = portfolio.stocks[index]?.buy;
-            portfolio.stocks[index] = {
-                name : stock , 
-                qty : oldQty - Number(qty),
-                buy : oldPrice , 
-                purchasedDate : portfolio.stocks[index]?.purchasedDate
-            };
-
-            if(portfolio.stocks[index]?.qty == 0){
-                portfolio.stocks.splice(index , 1);
-            }
-            await portfolio.save();
-            
-            user.balanceLeft = userBalance + (Number(qty) * price);
-            await user.save();
-        //     await user.updateOne({
-        //     balanceLeft : userBalance + (Number(qty) * price)
-        // }); dont do this otherwise the user will not update whih we passing it only updates in the db
-            // now the order has been placeddd
-            
-            res.status(201).json({
-                message : "Stock Sold successfully" , 
-                soldPrice : price , 
-                soldQty : Number(qty) , 
-                user : user
-            })
-        } catch (error) {
-            return res.status(401).json({
-                message : "Some error"
-            })}
-})
+        );
+        await sellStock(user , stock , qty , price , order);
+         res.status(201).json({
+                        message : "Stock Sold successfully" , 
+                        soldPrice : price , 
+                        soldQty : Number(qty) , 
+                        user : user});
+    } catch (error) {
+        res.status(401).json({
+               error : "Some error occured"
+            });  
+    }
+});
 
 app.get("/portfolio" ,authMiddleware, async(req ,res)=>{
     // take the logged in user and give the portfolio

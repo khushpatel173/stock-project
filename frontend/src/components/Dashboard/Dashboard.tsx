@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 function Dashboard() {
     const {ws}:any = useContext(WsContext);
     const[stocks , setStocks] = useState(new Map());
-    const defaultStocks = ['BTC-USD' , 'ETH-USD' , 'SOL-USD' , 'BNB-USD'];
+    const defaultStocks = ['BTC-USD' , 'ETH-USD' , 'SOL-USD' , 'BNB-USD' , 'TCS.NS' , 'RELIANCE.NS'];
     const[loading , setLoading] = useState(true);
 
   const subscribe = ()=>{
@@ -18,8 +18,8 @@ function Dashboard() {
         }
         const handleMessage = (event:any)=>{
 
-        
-              const data = JSON.parse(event.data);
+          
+        const data = JSON.parse(event.data);
             
       if(!defaultStocks.includes(data.data.id)){return}
     setStocks((prev) => {

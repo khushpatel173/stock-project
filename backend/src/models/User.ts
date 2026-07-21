@@ -5,8 +5,8 @@ interface IUser {
     name: string;
     email: string;
     picture: string;
-    portfolio: mongoose.Types.ObjectId
-    balanceLeft : number
+    portfolio: mongoose.Types.ObjectId;
+    balanceLeft : number;
 }
 
 
@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema<IUser>({
      balanceLeft : {
       type : Number , 
       default : 1000000
-     }
+     } , 
 });
 
 const User = mongoose.model<IUser>("User" , userSchema);

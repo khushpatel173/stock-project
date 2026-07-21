@@ -4,10 +4,7 @@ import {WebSocketServer} from 'ws'
 import protobuf from 'protobufjs'
 import { map  , priceMap} from '../services/map.js';
 export function initWebSocket (server:any){
-
         const ws = new WebSocket("wss://streamer.finance.yahoo.com/?version=2");
-     
-    
         const ws2 = new WebSocketServer({
             server
         });

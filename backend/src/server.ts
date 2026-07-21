@@ -5,7 +5,6 @@ import { initWebSocket } from './sockets/yahoo.websocket.js';
 
 export function startServer(){
     const server = http.createServer(app);
-
     // initialize websockets server and the whole logic
     initWebSocket(server);
 
