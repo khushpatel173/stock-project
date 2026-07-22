@@ -9,7 +9,6 @@ import { priceMap } from './services/map.js';
 import { authMiddleware } from './middleware/auth.js';
 import {buyStock, sellStock} from './services/order.services.js'
 import Order from './models/Order.js';
-
 const app = express();
 
 app.use(express.json());
@@ -160,7 +159,8 @@ app.post("/buy/:stock" , authMiddleware ,  async(req ,res)=>{
     const {qty} = req.query;
     // now we need the latest price of the stocks
     const price = priceMap.get(stock);
-    const {reqPrice} = req.body;
+    const {reqPrice , orderType , limitPrice} = req.body;
+    
     if(!price){ // that means no stock is found that means no live data
         return res.status(404).json({
         message: "No live data available for this stock",
@@ -176,13 +176,14 @@ const user = req.user;
 
         const order = new Order(
             {
-        user : user._id , 
+        user : user , 
         type : "BUY" , 
         status : "PENDING" , 
         createdAt : Date.now() , 
         symbol : stock , 
-        requestedPrice : reqPrice , 
-        orderType : "Market" 
+        qty,
+        requestedPrice : (orderType ? limitPrice : reqPrice)  , 
+        orderType : (orderType ? "Limit" : "Market") 
             }
         );
         await order.save();
@@ -205,7 +206,7 @@ app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
     try {
         const {stock} = req.params;
     const {qty} = req.query;
-    const {reqPrice} = req.body;
+    const {reqPrice , orderType , limitPrice} = req.body;
     // now we need the latest price of the stocks
     const price = priceMap.get(stock);
     if(!price){ // that means no stock is found that means no live data
@@ -222,15 +223,17 @@ app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
         }
          const order = new Order(
             {
-        user : user._id , 
+        user : user , 
         type : "SELL" , 
         status : "PENDING" , 
         createdAt : Date.now() , 
         symbol : stock , 
-        requestedPrice : reqPrice , 
-        orderType : "Market" 
+        qty , 
+        requestedPrice : (orderType ? limitPrice : reqPrice) , 
+        orderType : (orderType ? "Limit" : "Market")
             }
         );
+         await order.save();
         await sellStock(user , stock , qty , price , order);
          res.status(201).json({
                         message : "Stock Sold successfully" , 
@@ -269,6 +272,31 @@ app.get("/portfolio" ,authMiddleware, async(req ,res)=>{
        });
     }
 
+})
+
+app.get("/orders" , authMiddleware , async(req ,res)=>{
+    try {
+        const user = req.user;
+    if(!user){
+        res.status(401).json(
+            {
+                message : "User not found"
+            }
+        );
+    }
+    // find all the order of this user
+    const orders = await Order.find({
+       user : user
+    });
+
+    res.status(201).json({
+        orders
+    });
+
+    } catch (error) {
+        throw new Error(`error : ${error}`);
+    }
+    
 })
 
 

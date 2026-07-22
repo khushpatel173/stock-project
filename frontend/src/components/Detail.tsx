@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 import {useParams} from 'react-router-dom'
 import { useContext } from 'react';
 import WsContext from '../contexts/WsContext';
-import { AdvancedRealTimeChart } from "react-ts-tradingview-widgets";
 import stockService from '../services/stock';
 import StockChart from './StockChart';
 import { useNavigate} from 'react-router-dom';
@@ -18,11 +17,15 @@ function Detail() {
     // take the id from the params and then ask the backend to give data about this stock and then whatever the backend gives show it here
     const {id} = useParams();
     const [form_buy , setFormBuy] = useState(false);
+    const[checkBuy , setCheckBuy] = useState(false);
+    const[checkSell , setCheckSell] = useState(false);
     const [form_sell , setFormSell] = useState(false);
     const [qty , setQty] = useState(1);
     const {ws}:any = useContext(WsContext);
     const [data , setData]:any = useState(null);
    const [historyData, setHistoryData] = useState([]);
+   const [buyLimit, setBuyLimit] = useState(0);
+   const [sellLimit, setSellLimit] = useState(0);
    const [liveCandle, setLiveCandle] = useState(null);
    const [loading , setLoading] = useState(true);
      const updateCurrentCandle = (price)=>{
@@ -178,10 +181,23 @@ function Detail() {
           <div className="trade-modal__header trade-modal__header--buy">
             <div className="trade-modal__header-icon">📈</div>
             <h2 className="trade-modal__title">Buy {data.id}</h2>
-            <button className="trade-modal__close" onClick={() => setFormBuy(false)}>✕</button>
+            <button className="trade-modal__close" onClick={() => {setFormBuy(false)
+              setCheckBuy(false);
+            }}>✕</button>
           </div>
           <div className="trade-modal__body">
             <div className="trade-modal__field">
+              <input type="checkbox" onChange={()=>{
+                setCheckBuy((prev)=>!prev);
+              }}/>
+              {checkBuy && <input
+              type='number'
+              placeholder='Enter Limiting Buying Price'
+              value={buyLimit}
+              onChange={(e)=>{
+                setBuyLimit(e.target.value);
+              }}
+              /> }
               <label className="trade-modal__label">Quantity</label>
               <input className="trade-modal__input" type="text" placeholder='Enter quantity' value={qty} onChange={(e)=>{
                   setQty(Number(e.target.value));
@@ -195,6 +211,7 @@ function Detail() {
               <div className="trade-modal__summary-row">
                 <span className="trade-modal__summary-label">Quantity</span>
                 <span className="trade-modal__summary-value">{qty}</span>
+            
               </div>
               <div className="trade-modal__divider"></div>
               <div className="trade-modal__summary-row trade-modal__summary-row--total">
@@ -206,10 +223,11 @@ function Detail() {
           <div className="trade-modal__actions">
             <button className="trade-modal__btn trade-modal__btn--cancel" onClick={()=>{
               setFormBuy(false);
+              setCheckBuy(false)
             }}>Cancel</button>
             <button className="trade-modal__btn trade-modal__btn--confirm trade-modal__btn--buy" onClick={async()=>{
               try {
-               const res =  await stockService.buy(data.id , qty , qty*data.price);
+               const res =  await stockService.buy(data.id , qty ,data.price , buyLimit ,checkBuy);
                console.log(res);
                if(res){
                 alert("Successfully purchased");
@@ -231,10 +249,21 @@ function Detail() {
           <div className="trade-modal__header trade-modal__header--sell">
             <div className="trade-modal__header-icon">📉</div>
             <h2 className="trade-modal__title">Sell {data.id}</h2>
-            <button className="trade-modal__close" onClick={() => setFormSell(false)}>✕</button>
+            <button className="trade-modal__close" onClick={() => {setFormSell(false)
+              setCheckSell(false);
+            }}>✕</button>
           </div>
           <div className="trade-modal__body">
             <div className="trade-modal__field">
+              <input type="checkbox" onChange={()=>{
+                setCheckSell((prev)=>!prev);
+              }}/>
+              {checkSell && <input
+              type='number'
+              placeholder='Enter Limiting Selling Price'
+              value={sellLimit}
+              onChange={(e)=>{setSellLimit(e.target.value)}}
+              /> }
               <label className="trade-modal__label">Quantity</label>
               <input className="trade-modal__input" type="text" placeholder='Enter quantity' value={qty} onChange={(e)=>{
                   setQty(Number(e.target.value));
@@ -246,6 +275,7 @@ function Detail() {
                 <span className="trade-modal__summary-value">${typeof data.price === 'number' ? data.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : data.price}</span>
               </div>
               <div className="trade-modal__summary-row">
+                
                 <span className="trade-modal__summary-label">Quantity</span>
                 <span className="trade-modal__summary-value">{qty}</span>
               </div>
@@ -259,16 +289,18 @@ function Detail() {
           <div className="trade-modal__actions">
             <button className="trade-modal__btn trade-modal__btn--cancel" onClick={()=>{
               setFormSell(false);
+              setCheckSell(false);
             }}>Cancel</button>
             <button className="trade-modal__btn trade-modal__btn--confirm trade-modal__btn--sell" onClick={async()=>{
               try {
-               const res =  await stockService.sell(data.id , qty , qty*data.price);
+               const res =  await stockService.sell(data.id , qty , data.price , sellLimit , checkSell);
                console.log(res);
                if(res){
                 
                 alert("Successfully Sold");
                }
                 setFormSell(false);
+                setCheckSell(false);
                 dispatch(updateBalance(res.user))
               } catch (error) {
                 console.log("error :" , error.message);  

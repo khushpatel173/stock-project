@@ -15,6 +15,7 @@ import AuthLayout from './components/AuthLayout.tsx'
 import Login from './components/Header/Login.tsx'
 import Portfolio from './pages/Portfolio.tsx'
 import Profile from './pages/Profile.tsx'
+import Order from './pages/Order.tsx'
 const router = createBrowserRouter([
   {
     path: "/" , 
@@ -78,6 +79,15 @@ const router = createBrowserRouter([
         <AuthLayout authentication={true}>
          <Header/>
          <Profile/>
+         </AuthLayout>
+         </>
+      } , 
+       {
+        path : "/orders" , 
+        element :<>
+        <AuthLayout authentication={true}>
+         <Header/>
+        <Order/>
          </AuthLayout>
          </>
       }

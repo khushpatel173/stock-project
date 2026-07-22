@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import stockService from "../services/stock";
 import { useContext } from "react";
 import WsContext from "../contexts/WsContext";
+import { Link } from "react-router-dom";
 
 function Portfolio() {
     const [portfolio , setPortfolio] = useState(new Map());
@@ -144,6 +145,7 @@ ws.addEventListener("open" , ()=>{subscribe(stockNames.current)});
             const invested = value.qty * value.buy;
             const current = value.qty * value.ltp;
             return (
+              <Link to={`/${value.name}`}>
               <div className="portfolio-holdings-table__row" key={key}>
                 <span className="portfolio-holdings-table__stock">{value.name}</span>
                 <span className="portfolio-holdings-table__cell">{value.qty}</span>
@@ -155,6 +157,7 @@ ws.addEventListener("open" , ()=>{subscribe(stockNames.current)});
                   {pnl >= 0 ? '+' : ''}{pnl.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                 </span>
               </div>
+              </Link>
             );
           })}
         </div>

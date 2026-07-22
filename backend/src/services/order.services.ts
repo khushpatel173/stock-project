@@ -1,12 +1,17 @@
 import { priceMap } from "./map.js";
 import Port from "../models/Port.js";
+import { orderBuy , orderSell } from "./map.js";
+import { map } from "./map.js";
+import { ws } from "../sockets/yahoo.websocket.js";
+import User from "../models/User.js";
+import mongoose from "mongoose";
 
-async function buyStock(user , stock , qty , price , order){
-   
-    // now check if the user have enough balance to buy the stock
-
+async function purchaseStock(user , stock , qty , price , order){
+         // now check if the user have enough balance to buy the stock
         try {
+            console.log(user);
         // now we have the user as well so check its balance
+        
         const userBalance = user.balanceLeft;
         if(userBalance < Number(qty) * price){
             // insuffiecient balance
@@ -49,19 +54,16 @@ async function buyStock(user , stock , qty , price , order){
             await portfolio.save();
          order.status = "EXECUTED";
          order.executedAt = Date.now();
-         order.executedPrice = price * qty;
-    await order.save();
+         order.executedPrice = price;
+        await order.save();
         } catch (error) {
-
             order.status = "REJECTED";
             await order.save();
-           throw new Error("Some error");
+           throw new Error(`${error}`);
         }
-}
-
-async function sellStock(user , stock , qty , price , order){
-     try {
-           
+    }
+async function soldStock(user , stock , qty , price , order){
+try {
         // now we have the user as well so check its balance
         const userBalance = user.balanceLeft;
         // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
@@ -103,13 +105,67 @@ async function sellStock(user , stock , qty , price , order){
             await user.save();
         order.status = "EXECUTED";
          order.executedAt = Date.now();
-         order.executedPrice = price*qty;
+         order.executedPrice = price;
     await order.save();
         } catch (error) {
             order.status = "REJECTED";
             await order.save();
-           throw new Error("Some error");
-           
+           throw new Error(`${error}`);
         }
+    }  
+async function buyStock(user , stock , qty , price , order){
+    if(order.orderType == "Limit"){
+    // add this order in the order queue to buy     
+    // Limiting price is in thhe order.requested Price                                                                 
+   if (!orderBuy.has(stock)) {
+    orderBuy.set(stock, []);
 }
-export {buyStock , sellStock}
+orderBuy.get(stock)!.push(order);
+    // subscribe it as well
+     if(map.has(stock)){
+                             map.set(stock , map.get(stock) + 1);
+                            return stock;
+                        }
+                            if (ws.readyState === WebSocket.OPEN) {
+                                 map.set(stock ,1);
+        ws.send(
+            JSON.stringify({
+                subscribe: [stock],
+            })
+        );
+    }  
+
+    }
+    else{
+        await purchaseStock(user ,stock , qty , price , order);
+    }
+}
+
+async function sellStock(user , stock , qty , price , order){
+    if(order.orderType == "Limit"){
+// add this order in the order queue to sell       
+    if (!orderSell.has(stock)) {
+    orderSell.set(stock, []);
+}
+
+orderSell.get(stock)!.push(order);
+        
+          if(map.has(stock)){
+                             map.set(stock , map.get(stock) + 1);
+                            return stock;
+                        }
+                            if (ws.readyState === WebSocket.OPEN) {
+                                 map.set(stock ,1);
+        ws.send(
+            JSON.stringify({
+                subscribe: [stock],
+            })
+        );
+    }  
+    }
+    else{
+        await soldStock(user ,stock , qty , price , order);
+    }
+   
+}
+export {buyStock , sellStock , purchaseStock , soldStock}

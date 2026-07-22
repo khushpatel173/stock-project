@@ -31,6 +31,9 @@ const orderSchema = new mongoose.Schema({
     orderType : {
         type : String, 
         enum : ["Market" , "Limit"]
+    } , 
+    qty : {
+        type : Number
     }
 });
 
