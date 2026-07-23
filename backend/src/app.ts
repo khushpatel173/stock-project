@@ -176,7 +176,7 @@ const user = req.user;
 
         const order = new Order(
             {
-        user : user , 
+        user : user._id , 
         type : "BUY" , 
         status : "PENDING" , 
         createdAt : Date.now() , 
@@ -187,7 +187,7 @@ const user = req.user;
             }
         );
         await order.save();
-    await buyStock(user , stock , qty , price , order);
+    await buyStock(user._id , stock , qty , price , order);
          res.status(201).json({
                 message : "Order places successfully" , 
                 orderedPrice : price , 
@@ -223,7 +223,7 @@ app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
         }
          const order = new Order(
             {
-        user : user , 
+        user : user._id , 
         type : "SELL" , 
         status : "PENDING" , 
         createdAt : Date.now() , 
@@ -234,7 +234,7 @@ app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
             }
         );
          await order.save();
-        await sellStock(user , stock , qty , price , order);
+        await sellStock(user._id , stock , qty , price , order);
          res.status(201).json({
                         message : "Stock Sold successfully" , 
                         soldPrice : price , 

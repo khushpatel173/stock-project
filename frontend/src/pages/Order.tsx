@@ -95,13 +95,16 @@ export default function Order() {
                       {isExecuted && order.executedPrice ? `$${order.executedPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : '-'}
                     </span>
                   </div>
-                  <div>
-                    <span>
-                      {order.status == "PENDING" &&  <span>
-                        Live Price : {(stockPrice.has(order.symbol) && stockPrice.get(order.symbol) !== 0 ?  stockPrice.get(order.symbol): "-")}
-                      </span>  }
-                    </span>
-                  </div>
+                  {order.status === "PENDING" && (
+                    <div className="order-card__stat" style={{ gridColumn: '1 / -1' }}>
+                      <span className="order-card__label">Live Price</span>
+                      <span className="order-card__value" style={{ color: 'var(--color-primary)' }}>
+                        {stockPrice.has(order.symbol) && stockPrice.get(order.symbol) !== 0 
+                          ? `$${Number(stockPrice.get(order.symbol)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+                          : "-"}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             )

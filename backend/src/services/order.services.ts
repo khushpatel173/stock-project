@@ -5,10 +5,13 @@ import { map } from "./map.js";
 import { ws } from "../sockets/yahoo.websocket.js";
 import User from "../models/User.js";
 import mongoose from "mongoose";
+import { log } from "console";
 
 async function purchaseStock(user , stock , qty , price , order){
          // now check if the user have enough balance to buy the stock
         try {
+            console.log(user);
+            user = await User.findById(user);
             console.log(user);
         // now we have the user as well so check its balance
         
@@ -64,6 +67,7 @@ async function purchaseStock(user , stock , qty , price , order){
     }
 async function soldStock(user , stock , qty , price , order){
 try {
+        user = await User.findById(user);
         // now we have the user as well so check its balance
         const userBalance = user.balanceLeft;
         // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
