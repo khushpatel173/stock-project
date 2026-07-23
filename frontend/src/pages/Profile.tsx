@@ -13,7 +13,7 @@ function Profile() {
           setTransactions(response.transactions);
            console.log(response.transactions);
         } catch (error) {
-          
+          console.log(error);
         }
       }
       getTransactions();
@@ -75,18 +75,40 @@ function Profile() {
           <div className="profile-balance-card__subtitle">Ready to trade</div>
         </div>
 
-        {/* transaction history */}
-
-        <div>
-          Transaction History 
-          <br />
-            {transactions.map((transaction)=>{
-              return <div key={transaction.createdAt}>
-                <span> {transaction.amount}</span>
-                <span>{transaction.type}</span>
-                <span> {transaction.createdAt} </span>
-              </div>
-            })}
+        <div className="profile-transactions">
+          <div className="profile-transactions__header">
+            <h2 className="profile-transactions__title">Transaction History</h2>
+          </div>
+          
+          {transactions.length > 0 ? (
+            <div className="profile-transactions__list">
+              {transactions.map((transaction, index) => {
+                const isBuy = transaction.type.toLowerCase() === 'buy';
+                const date = new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                  month: 'short', day: 'numeric', year: 'numeric'
+                });
+                
+                return (
+                  <div className="profile-transactions__item" key={transaction.createdAt || index}>
+                    <div className={`profile-transactions__icon ${isBuy ? 'profile-transactions__icon--buy' : 'profile-transactions__icon--sell'}`}>
+                      {isBuy ? '↓' : '↑'}
+                    </div>
+                    <div className="profile-transactions__info">
+                      <span className="profile-transactions__type">{transaction.type}</span>
+                      <span className="profile-transactions__date">{date}</span>
+                    </div>
+                    <div className={`profile-transactions__amount ${isBuy ? 'profile-transactions__amount--buy' : 'profile-transactions__amount--sell'}`}>
+                      {isBuy ? '-' : '+'}${typeof transaction.amount === 'number' ? transaction.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : transaction.amount}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="profile-transactions__empty">
+              No recent transactions to show.
+            </div>
+          )}
         </div>
       </div>
     </div>
