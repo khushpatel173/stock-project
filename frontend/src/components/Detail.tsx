@@ -187,17 +187,32 @@ function Detail() {
           </div>
           <div className="trade-modal__body">
             <div className="trade-modal__field">
-              <input type="checkbox" onChange={()=>{
-                setCheckBuy((prev)=>!prev);
-              }}/>
-              {checkBuy && <input
-              type='number'
-              placeholder='Enter Limiting Buying Price'
-              value={buyLimit}
-              onChange={(e)=>{
-                setBuyLimit(e.target.value);
-              }}
-              /> }
+              <div className="trade-modal__type-selector">
+                <input 
+                  type="checkbox" 
+                  className="trade-modal__type-checkbox" 
+                  id="buy-order-type"
+                  checked={checkBuy}
+                  onChange={() => setCheckBuy((prev) => !prev)}
+                />
+                <label htmlFor="buy-order-type" className={`trade-modal__type-option trade-modal__type-option--left ${!checkBuy ? 'active' : ''}`}>Market</label>
+                <label htmlFor="buy-order-type" className={`trade-modal__type-option trade-modal__type-option--right ${checkBuy ? 'active' : ''}`}>Limit</label>
+                <div className="trade-modal__type-slider"></div>
+              </div>
+              
+              {checkBuy && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label className="trade-modal__label">Limit Price</label>
+                  <input
+                    className="trade-modal__input trade-modal__limit-input"
+                    type="number"
+                    placeholder="Enter limit price"
+                    value={buyLimit}
+                    onChange={(e) => setBuyLimit(e.target.value)}
+                  />
+                </div>
+              )}
+              
               <label className="trade-modal__label">Quantity</label>
               <input className="trade-modal__input" type="text" placeholder='Enter quantity' value={qty} onChange={(e)=>{
                   setQty(Number(e.target.value));
@@ -255,15 +270,32 @@ function Detail() {
           </div>
           <div className="trade-modal__body">
             <div className="trade-modal__field">
-              <input type="checkbox" onChange={()=>{
-                setCheckSell((prev)=>!prev);
-              }}/>
-              {checkSell && <input
-              type='number'
-              placeholder='Enter Limiting Selling Price'
-              value={sellLimit}
-              onChange={(e)=>{setSellLimit(e.target.value)}}
-              /> }
+              <div className="trade-modal__type-selector">
+                <input 
+                  type="checkbox" 
+                  className="trade-modal__type-checkbox" 
+                  id="sell-order-type"
+                  checked={checkSell}
+                  onChange={() => setCheckSell((prev) => !prev)}
+                />
+                <label htmlFor="sell-order-type" className={`trade-modal__type-option trade-modal__type-option--left ${!checkSell ? 'active' : ''}`}>Market</label>
+                <label htmlFor="sell-order-type" className={`trade-modal__type-option trade-modal__type-option--right ${checkSell ? 'active' : ''}`}>Limit</label>
+                <div className="trade-modal__type-slider"></div>
+              </div>
+
+              {checkSell && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label className="trade-modal__label">Limit Price</label>
+                  <input
+                    className="trade-modal__input trade-modal__limit-input"
+                    type="number"
+                    placeholder="Enter limit price"
+                    value={sellLimit}
+                    onChange={(e) => setSellLimit(e.target.value)}
+                  />
+                </div>
+              )}
+
               <label className="trade-modal__label">Quantity</label>
               <input className="trade-modal__input" type="text" placeholder='Enter quantity' value={qty} onChange={(e)=>{
                   setQty(Number(e.target.value));

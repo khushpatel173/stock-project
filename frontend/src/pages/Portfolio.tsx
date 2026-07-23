@@ -31,11 +31,10 @@ function Portfolio() {
       const data = JSON.parse(event.data);
         //  check if the data which is coming is in your portfolio or not
       
- setPortfolio((prev) =>{
-        if(!prev.has(data.data.id)){
-            return prev;
-        }
-          
+    setPortfolio((prev) =>{
+            if(!prev.has(data.data.id)){
+                return prev;
+            }
             const updated = new Map(prev);
             updated.set(data.data.id , {
                 ...updated.get(data.data.id) ,
