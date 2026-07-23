@@ -1,9 +1,23 @@
 import { useSelector } from "react-redux"
 import authService from "../services/auth"
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import stockService from "../services/stock";
 function Profile() {
     let user = useSelector((state) => state.auth.userData);
-    
+    const [transactions , setTransactions] = useState([]);
+
+    useEffect(()=>{
+      const getTransactions = async()=>{
+        try {
+          const response = await stockService.getTransactions();
+          setTransactions(response.transactions);
+           console.log(response.transactions);
+        } catch (error) {
+          
+        }
+      }
+      getTransactions();
+    } , [])
   return (
     <div className="profile-page">
       <div className="profile-page__header">
@@ -59,6 +73,20 @@ function Profile() {
             ${typeof user.balanceLeft === 'number' ? user.balanceLeft.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : user.balanceLeft}
           </div>
           <div className="profile-balance-card__subtitle">Ready to trade</div>
+        </div>
+
+        {/* transaction history */}
+
+        <div>
+          Transaction History 
+          <br />
+            {transactions.map((transaction)=>{
+              return <div key={transaction.createdAt}>
+                <span> {transaction.amount}</span>
+                <span>{transaction.type}</span>
+                <span> {transaction.createdAt} </span>
+              </div>
+            })}
         </div>
       </div>
     </div>

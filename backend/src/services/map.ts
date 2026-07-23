@@ -7,7 +7,7 @@ const orderBuy = new Map();
 const orderSell = new Map();
 
 // as the server starts fetch the data from the backend if there is any
-    const fetchPendingBuyOrders = async()=>{
+    const fetchPendingOrders = async()=>{
         try {
              const orders = await Order.find({
             status : "PENDING" , 
@@ -31,7 +31,7 @@ const orderSell = new Map();
         }
        
     }
- export {map , priceMap , orderBuy , orderSell , fetchPendingBuyOrders}
+ export {map , priceMap , orderBuy , orderSell , fetchPendingOrders}
 
 
 //  what we can do is we can make this as a service and like add different functions which are doing things in map like adding a stock , removing a stock , getting a stock , etc.

@@ -6,13 +6,13 @@ import { ws } from "../sockets/yahoo.websocket.js";
 import User from "../models/User.js";
 import mongoose from "mongoose";
 import { log } from "console";
+import { Transaction } from "../models/Transaction.js";
 
 async function purchaseStock(user , stock , qty , price , order){
          // now check if the user have enough balance to buy the stock
         try {
-            console.log(user);
             user = await User.findById(user);
-            console.log(user);
+
         // now we have the user as well so check its balance
         
         const userBalance = user.balanceLeft;
@@ -32,6 +32,13 @@ async function purchaseStock(user , stock , qty , price , order){
         }
         user.balanceLeft = userBalance - (Number(qty) * price);
         await user.save();
+         // add this transaction to the history
+         const transaction = new Transaction({
+            user : user._id,
+            type : "BUY" , 
+            amount : -1 * (Number(qty) * price)
+         });
+         await transaction.save();
         const index = portfolio.stocks.findIndex(obj => obj.name == stock);
         if(index == -1){
             // then this stock is not there just push
@@ -55,6 +62,8 @@ async function purchaseStock(user , stock , qty , price , order){
         }
         // that means it already have that then we need to change the avg price and qty
             await portfolio.save();
+
+       
          order.status = "EXECUTED";
          order.executedAt = Date.now();
          order.executedPrice = price;
@@ -107,6 +116,12 @@ try {
             
             user.balanceLeft = userBalance + (Number(qty) * price);
             await user.save();
+            const transaction = new Transaction({
+            user : user._id,
+            type : "SELL" , 
+            amount : (Number(qty) * price)
+         });
+         await transaction.save();
         order.status = "EXECUTED";
          order.executedAt = Date.now();
          order.executedPrice = price;
@@ -138,7 +153,6 @@ orderBuy.get(stock)!.push(order);
             })
         );
     }  
-
     }
     else{
         await purchaseStock(user ,stock , qty , price , order);

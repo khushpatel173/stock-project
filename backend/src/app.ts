@@ -9,6 +9,7 @@ import { priceMap } from './services/map.js';
 import { authMiddleware } from './middleware/auth.js';
 import {buyStock, sellStock} from './services/order.services.js'
 import Order from './models/Order.js';
+import { Transaction } from './models/Transaction.js';
 const app = express();
 
 app.use(express.json());
@@ -287,7 +288,7 @@ app.get("/orders" , authMiddleware , async(req ,res)=>{
     // find all the order of this user
     const orders = await Order.find({
        user : user
-    });
+    }).sort({createdAt : -1});
 
     res.status(201).json({
         orders
@@ -297,6 +298,32 @@ app.get("/orders" , authMiddleware , async(req ,res)=>{
         throw new Error(`error : ${error}`);
     }
     
+})
+
+app.get("/transactions" , authMiddleware , async(req ,res)=>{
+    try {
+        const user = req.user;
+         if(!user){
+        res.status(401).json(
+            {
+                message : "User not found"
+            }
+        );
+    }
+    // get all the transactions of this user
+    const transaction = await Transaction.find({
+        user : user._id
+    }).sort({createdAt : -1}); // we will get the latest transaction first
+    res.status(201).json({
+        transactions : transaction
+    });
+    } catch (error) {
+         res.status(401).json(
+            {
+                message : "Some error occured"
+            }
+        );
+    }
 })
 
 

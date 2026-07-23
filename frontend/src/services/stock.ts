@@ -16,9 +16,13 @@ class StockService{
         const res = await axios.get('http://localhost:8080/portfolio' , {withCredentials : true});
         return res.data;
     }
-    async getOrder(userId:any){
+    async getOrder(){
         // get all the orders from this user
         const res = await axios.get(`http://localhost:8080/orders` , {withCredentials : true});
+        return res.data;
+    }
+    async getTransactions(){
+        const res = await axios.get(`http://localhost:8080/transactions` , {withCredentials : true});
         return res.data;
     }
 }
