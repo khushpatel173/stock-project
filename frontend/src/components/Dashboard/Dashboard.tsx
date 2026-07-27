@@ -9,6 +9,7 @@ function Dashboard() {
     const[stocks , setStocks] = useState(new Map());
     const defaultStocks = ['BTC-USD' , 'ETH-USD' , 'SOL-USD' , 'BNB-USD' , 'TCS.NS' , 'RELIANCE.NS'];
     const[loading , setLoading] = useState(true);
+    const [refresh , setRefresh] = useState(false);
 
   const subscribe = ()=>{
             ws.send(JSON.stringify({
@@ -32,14 +33,17 @@ function Dashboard() {
     }
         }
 useEffect(()=>{
-  
-
 // ws.onmessage = (event:any) => {
 //     // console.log(JSON.parse(event.data));
 //     handleMessage(event);
 // };
       ws.addEventListener("message" , handleMessage);
-    // as soon as the page loads give the backend a msg to send the subscribe data
+    //    if (ws.readyState !== WebSocket.OPEN) {
+    //   // add the stock to somewhere else and then we can basically subscribe when it gets opened
+    //     return;
+    // }
+    // as soon as the page loads give the backend a msg to send the subscribe data\
+    console.log("subscribing");
         if(ws.readyState === WebSocket.OPEN){
             subscribe();
         }
@@ -48,14 +52,17 @@ useEffect(()=>{
 //     console.log("Connected to backend");
 //     subscribe();
 // };
-          ws.addEventListener("open" , subscribe);
+          console.log("Adding susbscribe listener to open");
+        //  pendingSubscription.push(...defaultStocks); 
+          ws.addEventListener("open" , subscribe , {once : true});
         }
 
     return ()=>{
         ws.removeEventListener("message", handleMessage);
         ws.removeEventListener("open", subscribe);
-        console.log("Event listener removed");
         // unsubscribeeeee
+        console.log("Unsubscribing");
+        
        if(ws.readyState === WebSocket.OPEN){
         ws.send(JSON.stringify({
             type : "unsubscribe" , 
@@ -64,14 +71,18 @@ useEffect(()=>{
     }
    
     }
-} , [])
-
+} , [refresh]);
 
     if(loading){
         return (
           <div className="loading-screen">
             <div className="loading-spinner"></div>
             <p className="loading-text">Loading market data...</p>
+             <button onClick={()=>{
+        setRefresh((prev) => !prev);
+      }}>
+        Refresh
+      </button>
           </div>
         )
     }
@@ -83,6 +94,11 @@ useEffect(()=>{
           <p className="dashboard__subtitle">Real-time cryptocurrency prices</p>
         </div>
       </div>
+      <button onClick={()=>{
+        setRefresh((prev) => !prev);
+      }}>
+        Refresh
+      </button>
       <div className="dashboard__grid">
         {Array.from(stocks.values()).map((stock) => (
           <Link to={`/${stock.id}`} key={stock.id} className="stock-card-link">

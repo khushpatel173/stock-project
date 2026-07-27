@@ -2003,15 +2003,15 @@
 }
 
 .profile-transactions__icon--buy {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--color-positive);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.profile-transactions__icon--sell {
   background: rgba(239, 68, 68, 0.1);
   color: var(--color-negative);
   border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.profile-transactions__icon--sell {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-positive);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .profile-transactions__info {
@@ -2040,11 +2040,11 @@
 }
 
 .profile-transactions__amount--buy {
-  color: var(--color-positive);
+  color: var(--color-negative);
 }
 
 .profile-transactions__amount--sell {
-  color: var(--color-negative);
+  color: var(--color-positive);
 }
 
 .profile-transactions__empty {

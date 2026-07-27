@@ -6,9 +6,11 @@ const WsContextProvider = ({ children }: any) => {
     const ws = useRef(
         new WebSocket("ws://localhost:8080")
     );
+  
 
     return (
-        <WsContext.Provider value={{ ws: ws.current }}>
+        <WsContext.Provider value={{ ws: ws.current}
+        }>
             {children}
         </WsContext.Provider>
     );

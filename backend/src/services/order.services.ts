@@ -36,7 +36,7 @@ async function purchaseStock(user , stock , qty , price , order){
          const transaction = new Transaction({
             user : user._id,
             type : "BUY" , 
-            amount : -1 * (Number(qty) * price)
+            amount :(Number(qty) * price)
          });
          await transaction.save();
         const index = portfolio.stocks.findIndex(obj => obj.name == stock);

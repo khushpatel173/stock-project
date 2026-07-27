@@ -5,17 +5,26 @@ import protobuf from 'protobufjs'
 import { map  , priceMap} from '../services/map.js';
 import { orderBuy , orderSell } from '../services/map.js';
 import { buyStock, purchaseStock, soldStock } from '../services/order.services.js';
+
 export const ws = new WebSocket("wss://streamer.finance.yahoo.com/?version=2");
+
+let activeSubscription:any = [];
 export function initWebSocket (server:any){
-       
+
         const ws2 = new WebSocketServer({
             server
         });
     
         ws.on("open" , async()=>{
-           
+            // when the socket opens subscriibs to the stock which are pending
+            ws.send(
+            JSON.stringify({
+                subscribe: activeSubscription,
+            })
+        );
+
+            activeSubscription = [];
             console.log("Socket Connected!");
-            console.log("Subscribed!");
             const root = await protobuf.load("protobuf/PricingData.proto")
             const PricingData = root.lookupType("PricingData");
     
@@ -119,9 +128,8 @@ export function initWebSocket (server:any){
             })
     
         });
-    
-    
-    
+
+        });
         ws.on("close", () => {
             console.log("Closed");
         });
@@ -129,8 +137,8 @@ export function initWebSocket (server:any){
         ws.on("error", (err) => {
             console.error(err);
         });
-        })
         ws2.on("connection" , (client)=>{
+            console.log("Frontend ws connected"); 
             client.on("message" , (message : any)=>{
                 const parsed = JSON.parse(message.toString());  
                 // console.log(parsed);  
@@ -141,6 +149,8 @@ export function initWebSocket (server:any){
                              map.set(stock , map.get(stock) + 1);
                             return stock;
                         }
+                        console.log(ws.readyState === WebSocket.OPEN);
+                        
                             if (ws.readyState === WebSocket.OPEN) {
                                  map.set(stock ,1);
         ws.send(
@@ -148,6 +158,9 @@ export function initWebSocket (server:any){
                 subscribe: [stock],
             })
         );
+    }else{
+        console.log("Ws is still not connected"); 
+        activeSubscription.push(stock);
     }  
                         return stock;
                     })
