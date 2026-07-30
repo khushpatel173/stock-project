@@ -9,15 +9,9 @@ import dotenv from 'dotenv'
 
 dotenv.config();
 
-export const ws = new WebSocket(process.env.YAHOO_WS!);
+        export const ws = new WebSocket(process.env.YAHOO_WS!);
 let activeSubscription:any = [];
-export function initWebSocket (server:any){
-
-        const ws2 = new WebSocketServer({
-            server
-        });
-    
-        ws.on("open" , async()=>{
+ ws.on("open" , async()=>{
             // when the socket opens subscriibs to the stock which are pending
             ws.send(
             JSON.stringify({
@@ -27,10 +21,19 @@ export function initWebSocket (server:any){
 
             activeSubscription = [];
             console.log("Socket Connected!");
+           
+        });
+
+export function initWebSocket (server:any){
+        
+        const ws2 = new WebSocketServer({
+            server
+        });
+    
+       
+            ws.on("message", async(message) => {
             const root = await protobuf.load("protobuf/PricingData.proto")
             const PricingData = root.lookupType("PricingData");
-    
-            ws.on("message", async(message) => {
             // console.log(typeof message);
             const parsed = JSON.parse(message.toString());
             const buffer = Buffer.from(parsed.message, "base64");
@@ -131,7 +134,7 @@ export function initWebSocket (server:any){
     
         });
 
-        });
+    
         ws.on("close", () => {
             console.log("Closed");
         });
