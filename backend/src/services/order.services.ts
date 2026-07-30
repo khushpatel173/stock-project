@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 import { log } from "console";
 import { Transaction } from "../models/Transaction.js";
 
-async function purchaseStock(user , stock , qty , price , order){
+async function purchaseStock(user:any , stock:any , qty:any , price:any , order:any){
          // now check if the user have enough balance to buy the stock
         try {
             user = await User.findById(user);
@@ -24,7 +24,7 @@ async function purchaseStock(user , stock , qty , price , order){
         // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
 
         // add the stock to the portfolio and reduce the balance
-          const portfolio = await Port.findOne({
+          const portfolio:any = await Port.findOne({
             owner : user._id
         });
         if(!portfolio){
@@ -39,7 +39,7 @@ async function purchaseStock(user , stock , qty , price , order){
             amount :(Number(qty) * price)
          });
          await transaction.save();
-        const index = portfolio.stocks.findIndex(obj => obj.name == stock);
+        const index = portfolio.stocks.findIndex((obj:any) => obj.name == stock);
         if(index == -1){
             // then this stock is not there just push
                portfolio.stocks.push({
@@ -74,7 +74,7 @@ async function purchaseStock(user , stock , qty , price , order){
            throw new Error(`${error}`);
         }
     }
-async function soldStock(user , stock , qty , price , order){
+async function soldStock(user:any , stock:any , qty:any , price:any , order:any){
 try {
         user = await User.findById(user);
         // now we have the user as well so check its balance
@@ -82,13 +82,13 @@ try {
         // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
 
         // add the stock to the portfolio and reduce the balance
-          const portfolio = await Port.findOne({
+          const portfolio:any = await Port.findOne({
             owner : user._id
         });
         if(!portfolio){
            throw new Error("Portfolio not found");
         }
-    const index = portfolio.stocks.findIndex(obj => obj.name == stock);
+    const index = portfolio.stocks.findIndex((obj:any) => obj.name == stock);
     if(index == -1){
         // that means we dont have this stock
        throw new Error("You dont have this stock")
@@ -132,7 +132,7 @@ try {
            throw new Error(`${error}`);
         }
     }  
-async function buyStock(user , stock , qty , price , order){
+async function buyStock(user:any , stock:any , qty:any , price:any , order:any){
     if(order.orderType == "Limit"){
     // add this order in the order queue to buy     
     // Limiting price is in thhe order.requested Price                                                                 
@@ -159,7 +159,7 @@ orderBuy.get(stock)!.push(order);
     }
 }
 
-async function sellStock(user , stock , qty , price , order){
+async function sellStock(user:any , stock:any , qty:any , price:any , order:any){
     if(order.orderType == "Limit"){
 // add this order in the order queue to sell       
     if (!orderSell.has(stock)) {

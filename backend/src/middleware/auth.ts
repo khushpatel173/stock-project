@@ -5,7 +5,7 @@ import User from '../models/User.js';
 
 
   dotenv.config();
-  export async function authMiddleware(req , res , next){
+  export async function authMiddleware(req:any , res:any , next:any){
 
     try {
         const token = req.cookies.token;
@@ -16,7 +16,7 @@ import User from '../models/User.js';
         }
          const decoded : any = jwt.verify(
             token,
-            process.env.JWT_SECRET
+            process.env.JWT_SECRET!
         );
         const user = await User.findById(decoded.userId);
         if(!user){

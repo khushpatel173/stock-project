@@ -9,7 +9,7 @@ import dotenv from 'dotenv'
 
 dotenv.config();
 
-export const ws = new WebSocket(process.env.YAHOO_WS);
+export const ws = new WebSocket(process.env.YAHOO_WS!);
 let activeSubscription:any = [];
 export function initWebSocket (server:any){
 
@@ -146,7 +146,7 @@ export function initWebSocket (server:any){
                 // console.log(parsed);  
                 // client have sent a message that i need info of this particular stck
                 if(parsed.type === "subscribe"){
-                    parsed.stock.map((stock , index) => {
+                    parsed.stock.map((stock:any , index:any) => {
                           if(map.has(stock)){
                              map.set(stock , map.get(stock) + 1);
                             return stock;
@@ -170,7 +170,7 @@ export function initWebSocket (server:any){
                 // add about unsubsribe
                 else if(parsed.type === 'unsubscribe'){
                     console.log("Before" , map);
-                    parsed.stock.map((stock,index) =>{
+                    parsed.stock.map((stock:any,index:any) =>{
                         if(map.has(stock)){
                             map.set(stock , map.get(stock) - 1);
                         }

@@ -44,8 +44,8 @@ app.get(
     // });
     // await portfolio.save();
 
-    let portfolio = await Port.findOne({
-        owner : req.user?._id
+    let portfolio:any = await Port.findOne({
+        owner : req.user!._id
     });
     if(!portfolio){
         portfolio =  new Port({
@@ -60,7 +60,7 @@ app.get(
     });
      const token = jwt.sign({
         userId : req.user?._id
-     } , process.env.JWT_SECRET , {
+     } , process.env.JWT_SECRET! , {
         expiresIn : "1d"
      });
      res.cookie("token" , token , {
@@ -125,7 +125,7 @@ app.get("/history/:stock" ,async(req ,res)=>{
     let timeData = response.chart.result[0].timestamp;
     timeData = [...new Set(timeData)];
     
-    const updatedData = [];
+    const updatedData:any = [];
     for(let i = 0; i < data['open'].length;i++){
         if (
     timeData[i] == null ||         
@@ -254,7 +254,7 @@ app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
 app.get("/portfolio" ,authMiddleware, async(req ,res)=>{
     // take the logged in user and give the portfolio
     try {
-        const user = req.user;
+        const user:any = req.user;
         if(!user){
              return res.status(404).json({
                 message: "User not found"
@@ -280,7 +280,7 @@ app.get("/portfolio" ,authMiddleware, async(req ,res)=>{
 
 app.get("/orders" , authMiddleware , async(req ,res)=>{
     try {
-        const user = req.user;
+        const user:any = req.user;
     if(!user){
         res.status(401).json(
             {
@@ -289,8 +289,13 @@ app.get("/orders" , authMiddleware , async(req ,res)=>{
         );
     }
     // find all the order of this user
+
+
+
+    // check
+    
     const orders = await Order.find({
-       user : user
+       user : user._id
     }).sort({createdAt : -1});
 
     res.status(201).json({
@@ -305,7 +310,7 @@ app.get("/orders" , authMiddleware , async(req ,res)=>{
 
 app.get("/transactions" , authMiddleware , async(req ,res)=>{
     try {
-        const user = req.user;
+        const user:any = req.user;
          if(!user){
         res.status(401).json(
             {

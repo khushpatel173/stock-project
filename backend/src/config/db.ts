@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config();
 // const dbUrl = "mongodb://127.0.0.1:27017/trading-app";
-const dbUrl = process.env.MONGO_URL;
+const dbUrl:any = process.env.MONGO_URL;
 // main().then(()=>{
 //     console.log("connection successful");
 // }).catch((err)=>{
