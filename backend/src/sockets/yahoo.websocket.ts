@@ -5,9 +5,11 @@ import protobuf from 'protobufjs'
 import { map  , priceMap} from '../services/map.js';
 import { orderBuy , orderSell } from '../services/map.js';
 import { buyStock, purchaseStock, soldStock } from '../services/order.services.js';
+import dotenv from 'dotenv'
 
-export const ws = new WebSocket("wss://streamer.finance.yahoo.com/?version=2");
+dotenv.config();
 
+export const ws = new WebSocket(process.env.YAHOO_WS);
 let activeSubscription:any = [];
 export function initWebSocket (server:any){
 

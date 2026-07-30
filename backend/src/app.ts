@@ -10,11 +10,14 @@ import { authMiddleware } from './middleware/auth.js';
 import {buyStock, sellStock} from './services/order.services.js'
 import Order from './models/Order.js';
 import { Transaction } from './models/Transaction.js';
+import dotenv from 'dotenv'
+
+dotenv.config();
 const app = express();
 
 app.use(express.json());
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL,
     credentials: true 
 }));
 app.use(cookieParser());
@@ -57,7 +60,7 @@ app.get(
     });
      const token = jwt.sign({
         userId : req.user?._id
-     } , "secret" , {
+     } , process.env.JWT_SECRET , {
         expiresIn : "1d"
      });
      res.cookie("token" , token , {

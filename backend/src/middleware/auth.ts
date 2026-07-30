@@ -1,7 +1,10 @@
   
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js';
-  
+  import dotenv from 'dotenv'
+
+
+  dotenv.config();
   export async function authMiddleware(req , res , next){
 
     try {
@@ -13,7 +16,7 @@ import User from '../models/User.js';
         }
          const decoded : any = jwt.verify(
             token,
-            "secret"
+            process.env.JWT_SECRET
         );
         const user = await User.findById(decoded.userId);
         if(!user){
