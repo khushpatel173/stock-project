@@ -64,7 +64,9 @@ app.get(
         expiresIn : "1d"
      });
      res.cookie("token" , token , {
-            httpOnly : true
+            httpOnly : true , 
+            secure : true , 
+            sameSite : "none"
         });
         res.redirect("http://localhost:5173/");
     }
