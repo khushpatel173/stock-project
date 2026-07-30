@@ -1,4 +1,4 @@
-import string from "figlet/fonts/babyface-lame";
+
 import mongoose, { mongo } from "mongoose";
 
 const portSchema = new mongoose.Schema({
