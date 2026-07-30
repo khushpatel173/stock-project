@@ -111,7 +111,7 @@ function Detail() {
           });
           setLoading(false);
             } catch (error) {
-              console.log("Something went wrong")
+              console.log("Error :" , error.message)
             }
            
         }

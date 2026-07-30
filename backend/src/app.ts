@@ -102,7 +102,8 @@ app.get("/logout" , (req ,res)=>{
 });
 
 app.get("/getStocks/:stock" , async(req ,res)=>{
-     const {stock} = req.params;    
+    try {
+       const {stock} = req.params;    
     //  now search for this stock
     const response = await fetch(`https://query2.finance.yahoo.com/v1/finance/search?q=${stock}`);
     const ans = await response.json();
@@ -110,11 +111,17 @@ app.get("/getStocks/:stock" , async(req ,res)=>{
     const requiredStocks = ans.quotes;
     res.json({
         stockData : requiredStocks
-    });
+    });  
+    } catch (error) {
+        console.log(error);
+        res.status(401).json({error});
+    }
+    
 })
 
 app.get("/history/:stock" ,async(req ,res)=>{
-    const {stock} = req.params;
+    try {
+       const {stock} = req.params;
     const{range , interval} = req.query;
     const ans = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${stock}?range=${range}&interval=${interval}`);
     const response = await ans.json();
@@ -155,7 +162,14 @@ app.get("/history/:stock" ,async(req ,res)=>{
     
     res.json({historyData : updatedData , 
         lastCandle : updatedData[updatedData.length-1]
-    });
+    }); 
+    } catch (error) {
+        console.log(error);
+        res.status(401).json({
+            error
+        })
+    }
+    
 })
 
 app.post("/buy/:stock" , authMiddleware ,  async(req ,res)=>{
