@@ -14,7 +14,7 @@ function Search() {
         const timer = setTimeout(async()=>{
             try {
                     // this will run if the user have not typed anything in 300ms
-            const res = await axios.get(`http://localhost:8080/getStocks/${search}`);
+            const res = await axios.get(`https://stockify-kmw5.onrender.com/getStocks/${search}`);
             // res.data will give you the data
                 console.log(res.data.stockData);
                 

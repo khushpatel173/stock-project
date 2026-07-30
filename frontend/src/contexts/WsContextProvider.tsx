@@ -4,7 +4,7 @@ import WsContext from "./WsContext";
 const WsContextProvider = ({ children }: any) => {
 
     const ws = useRef(
-        new WebSocket("ws://localhost:8080")
+        new WebSocket("wss://stockify-kmw5.onrender.com")
     );
   
 
