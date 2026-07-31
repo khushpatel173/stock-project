@@ -8,6 +8,7 @@ export default function Order() {
     const userData:any = useSelector((state:any) => (state.auth.userData));
     const [orders , setOrders] = useState([]);
     const [stockPrice , setStockPrice] = useState(new Map());
+    const [loading , setLoading] = useState(true);
     const handleMessage = (event:any)=>{
       const data = JSON.parse(event.data);
       if(data.type == "price-update"){
@@ -33,6 +34,9 @@ export default function Order() {
       console.log(orders);
       
       setOrders(orders);
+      if(loading == true){
+      setLoading(false);
+      }
             const newMap = new Map();
             orders.map((order:any) =>{
               // only for the pending ones
@@ -46,6 +50,22 @@ export default function Order() {
     getOrders();
      ws.addEventListener("message" ,handleMessage);
    } , [])
+
+       if(loading){
+        return (
+          <div className="loading-screen">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading Orders...</p>
+             <button className="refresh-btn" onClick={()=>{
+              window.location.reload();
+         }}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Refresh
+      </button>
+          </div>
+        )
+    }
+
   return (
     <div className="orders-page">
       <div className="orders-page__header">
@@ -61,7 +81,7 @@ export default function Order() {
           {orders.map((order: any, index: number) => {
             const isBuy = order.type === 'BUY';
             const isExecuted = order.status === 'EXECUTED';
-            
+         
             return (
               <div key={index} className="order-card">
                 <div className="order-card__header">

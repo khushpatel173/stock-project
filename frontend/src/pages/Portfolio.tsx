@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 
 function Portfolio() {
     const [portfolio , setPortfolio] = useState(new Map());
+    const [loading , setLoading] = useState(true);
     const stockNames = useRef([]);
     let totalPnl = 0;
     portfolio.forEach((value) =>{
@@ -48,7 +49,12 @@ function Portfolio() {
        
         const getPort = async()=>{
             const res = await stockService.portfolio();
+
+            console.log(res);
+            
+            
             const portfolio = res.portfolio.stocks; // arr of stock
+            
             stockNames.current = portfolio.map((stock:any)=>stock.name);
             // subscribe to all who are in portfolio 
             const newMap = new Map();
@@ -59,6 +65,9 @@ function Portfolio() {
                 return stock;
             });
              setPortfolio(newMap);
+             if(loading == true){
+              setLoading(false);
+             }
              
             // subscribe
             // const stocknames = portfolio.map((stock) => (stock.name));
@@ -83,6 +92,22 @@ ws.addEventListener("open" , ()=>{subscribe(stockNames.current)});
     }
         }
     } , [])
+
+    if(loading){
+      return (
+          <div className="loading-screen">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading Portfolio...</p>
+             <button className="refresh-btn" onClick={()=>{
+              window.location.reload();
+         }}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Refresh
+      </button>
+          </div>
+        )
+    }
+
   return (
     <div className="portfolio-page">
       <div className="portfolio-page__header">

@@ -13,7 +13,8 @@ class StockService{
         return res.data;
     }
     async portfolio(){
-        const res = await axios.get('${serverUrl}/portfolio' , {withCredentials : true});
+        
+        const res = await axios.get(`${serverUrl}/portfolio` , {withCredentials : true});        
         return res.data;
     }
     async getOrder(){

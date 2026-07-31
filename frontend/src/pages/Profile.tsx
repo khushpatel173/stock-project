@@ -4,12 +4,16 @@ import stockService from "../services/stock";
 function Profile() {
     let user = useSelector((state:any) => state.auth.userData);
     const [transactions , setTransactions] = useState([]);
+    const [loading , setLoading] = useState(true);
 
     useEffect(()=>{
       const getTransactions = async()=>{
         try {
           const response = await stockService.getTransactions();
           setTransactions(response.transactions);
+          if(loading == true){
+            setLoading(false);
+          }
            console.log(response.transactions);
         } catch (error) {
           console.log(error);
@@ -81,7 +85,6 @@ function Profile() {
           <div className="profile-transactions__header">
             <h2 className="profile-transactions__title">Transaction History</h2>
           </div>
-          
           {transactions.length > 0 ? (
             <div className="profile-transactions__list">
               {transactions.map((transaction:any, index) => {
@@ -107,10 +110,15 @@ function Profile() {
               })}
             </div>
           ) : (
-            <div className="profile-transactions__empty">
+            (loading ? <div className="loading-screen">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading Transactions ...</p>
+          </div> :  <div className="profile-transactions__empty">
               No recent transactions to show.
-            </div>
-          )}
+            </div>)
+           
+          )
+          }
         </div>
       </div>
     </div>

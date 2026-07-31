@@ -285,6 +285,8 @@ app.get("/portfolio" ,authMiddleware, async(req ,res)=>{
                 message: "PortFolio cant be fetched"
             });
         }
+        console.log(portfolio);
+        
        res.status(201).json({
         portfolio : portfolio
        });
