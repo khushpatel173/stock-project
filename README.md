@@ -1,5 +1,7 @@
 # Stock Project
 
+Here is the demo video - https://drive.google.com/file/d/1IZ_fT8jFdcbAbYcNocUHtS8pc1ALKZYI/view?usp=sharing
+
 A full-stack stock trading app with a TypeScript/Node.js backend and a React + Vite frontend.
 
 ## Prerequisites
