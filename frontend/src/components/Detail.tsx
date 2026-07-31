@@ -96,7 +96,8 @@ function Detail() {
         // get the historic data
            const getData = async()=>{
             try {
-               const response = await axios.get(`https://stockify-kmw5.onrender.com/history/${id}?range=${range}&interval=${interval}`);
+              const serverUrl = import.meta.env.VITE_SERVER_URL;
+               const response = await axios.get(`${serverUrl}/history/${id}?range=${range}&interval=${interval}`);
            console.log(response.data.historyData);
             lastCandleRef.current = response.data.lastCandle;
            setLiveCandle(response.data.lastCandle);

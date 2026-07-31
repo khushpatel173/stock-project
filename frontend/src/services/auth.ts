@@ -1,15 +1,17 @@
 import axios from "axios";
 
+const serverUrl = import.meta.env.VITE_SERVER_URL;
+
 class AuthService{
     loginWithGoogle(){
-        window.location.href =  "https://stockify-kmw5.onrender.com/auth/google";
+        window.location.href =  `${serverUrl}/auth/google`;
     }
     async getCurrentUser(){
-        const res = await axios.get("https://stockify-kmw5.onrender.com/profile" , {withCredentials : true});
+        const res = await axios.get(`${serverUrl}/profile` , {withCredentials : true});
         return res.data;   
     }
     async logout(){
-        const res = await axios.get("https://stockify-kmw5.onrender.com/logout" , {withCredentials : true});
+        const res = await axios.get(`${serverUrl}/logout` , {withCredentials : true});
         return res.data;
     }
 }

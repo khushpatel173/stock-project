@@ -7,7 +7,7 @@ import "dotenv/config";
 passport.use(new Strategy({
     clientID : process.env.CLIENT_ID! , 
     clientSecret: process.env.CLIENT_SECRET!,
-    callbackURL: 'https://stockify-kmw5.onrender.com/auth/google/callback'
+    callbackURL: `${process.env.SERVER_URL}/auth/google/callback`
 } , async (accessToken , refreshToken , profile , done)=> {
     // what happens after login
     // check if the user is there in the db if he is not then add him to the db

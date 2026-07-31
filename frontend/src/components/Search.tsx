@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 function Search() {
     const[search , setSearch] = useState("");
     const[stocks , setStocks] = useState([]);
+    const serverUrl = import.meta.env.VITE_SERVER_URL;
     useEffect(()=>{
         // whenever the search changes we will get the data from the backend and dispaly in the lists
         if (!search.trim()) {
@@ -14,7 +15,7 @@ function Search() {
         const timer = setTimeout(async()=>{
             try {
                     // this will run if the user have not typed anything in 300ms
-            const res = await axios.get(`https://stockify-kmw5.onrender.com/getStocks/${search}`);
+            const res = await axios.get(`${serverUrl}/getStocks/${search}`);
             // res.data will give you the data
                 console.log(res.data.stockData);
                 
