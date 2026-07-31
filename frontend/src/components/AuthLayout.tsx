@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import type { ReactNode } from 'react';
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
-function AuthLayout({children,authentication=true}) {
-    const loading = useSelector((state) => state.auth.loading);
-    const authStatus = useSelector((state) => state.auth.isLoggedIn);
+function AuthLayout({ children, authentication = true }: { children: ReactNode; authentication?: boolean }) {
+    const loading = useSelector((state : any) => state.auth.loading);
+    const authStatus = useSelector((state : any) => state.auth.isLoggedIn);
     console.log("AuthLayout rendered");
     const navigate = useNavigate();
     useEffect(()=>{

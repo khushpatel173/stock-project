@@ -1,9 +1,8 @@
 import { useSelector } from "react-redux"
-import authService from "../services/auth"
 import { useEffect, useState } from "react";
 import stockService from "../services/stock";
 function Profile() {
-    let user = useSelector((state) => state.auth.userData);
+    let user = useSelector((state:any) => state.auth.userData);
     const [transactions , setTransactions] = useState([]);
 
     useEffect(()=>{
@@ -85,7 +84,7 @@ function Profile() {
           
           {transactions.length > 0 ? (
             <div className="profile-transactions__list">
-              {transactions.map((transaction, index) => {
+              {transactions.map((transaction:any, index) => {
                 const isBuy = transaction.type.toLowerCase() === 'buy';
                 const date = new Date(transaction.createdAt).toLocaleDateString('en-US', {
                   month: 'short', day: 'numeric', year: 'numeric'

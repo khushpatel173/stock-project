@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import  { useEffect, useState } from 'react'
 import { useSelector} from 'react-redux'
 import stockService from '../services/stock';
 import { useContext } from 'react';
 import WsContext from '../contexts/WsContext';
 export default function Order() {
     const {ws}:any = useContext(WsContext);
-    const userData = useSelector((state) => (state.auth.userData));
+    const userData:any = useSelector((state:any) => (state.auth.userData));
     const [orders , setOrders] = useState([]);
     const [stockPrice , setStockPrice] = useState(new Map());
-    const handleMessage = (event)=>{
+    const handleMessage = (event:any)=>{
       const data = JSON.parse(event.data);
       if(data.type == "price-update"){
          setStockPrice((prev) =>{
@@ -28,13 +28,13 @@ export default function Order() {
       return;
     }
     const getOrders = async()=>{
-      const res = await stockService.getOrder(userData._id);
+      const res = await stockService.getOrder();
       const orders = res.orders;
       console.log(orders);
       
       setOrders(orders);
             const newMap = new Map();
-            orders.map((order) =>{
+            orders.map((order:any) =>{
               // only for the pending ones
               if(order.status == "PENDING"){
                 newMap.set(order.symbol , 0);

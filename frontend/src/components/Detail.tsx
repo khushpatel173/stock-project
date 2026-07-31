@@ -11,7 +11,7 @@ import { updateBalance } from '../../store/authSlice';
 function Detail() {
    const range = '1d'
    const dispatch = useDispatch();
-   const lastCandleRef = useRef(null);
+   const lastCandleRef : any = useRef(null);
    const navigate = useNavigate();
    const interval = '1m' // this are the default values can change as well
     // take the id from the params and then ask the backend to give data about this stock and then whatever the backend gives show it here
@@ -28,7 +28,7 @@ function Detail() {
    const [sellLimit, setSellLimit] = useState(0);
    const [liveCandle, setLiveCandle] = useState(null);
    const [loading , setLoading] = useState(true);
-     const updateCurrentCandle = (price)=>{
+     const updateCurrentCandle = (price : any)=>{
         if(!lastCandleRef.current){
             return;
         }
@@ -41,8 +41,8 @@ function Detail() {
          lastCandleRef.current = updatedCandle
          setLiveCandle(updatedCandle);
      }  
-     const createNewCandle = (price , candleTime)=>{
-        const newCandle = {
+     const createNewCandle = (price:any , candleTime:any)=>{
+        const newCandle:any = {
             time: candleTime,
             open: price,
             high: price,
@@ -110,7 +110,7 @@ function Detail() {
             text : "Last traded Price"
           });
           setLoading(false);
-            } catch (error) {
+            } catch (error : any) {
               console.log("Error :" , error.message)
             }
            
@@ -208,7 +208,7 @@ function Detail() {
                     type="number"
                     placeholder="Enter limit price"
                     value={buyLimit}
-                    onChange={(e) => setBuyLimit(e.target.value)}
+                    onChange={(e:any) => setBuyLimit(e.target.value)}
                   />
                 </div>
               )}
@@ -251,7 +251,7 @@ function Detail() {
               //  set the balance
                dispatch(updateBalance(res.user))
                navigate("/portfolio")
-              } catch (error) {
+              } catch (error:any) {
                 console.log("error :" , error.message);  
               }
             }}>Confirm Buy</button>
@@ -291,7 +291,7 @@ function Detail() {
                     type="number"
                     placeholder="Enter limit price"
                     value={sellLimit}
-                    onChange={(e) => setSellLimit(e.target.value)}
+                    onChange={(e:any) => setSellLimit(e.target.value)}
                   />
                 </div>
               )}
@@ -334,7 +334,7 @@ function Detail() {
                 setFormSell(false);
                 setCheckSell(false);
                 dispatch(updateBalance(res.user))
-              } catch (error) {
+              } catch (error:any) {
                 console.log("error :" , error.message);  
               }
              

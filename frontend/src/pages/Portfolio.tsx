@@ -8,26 +8,26 @@ function Portfolio() {
     const [portfolio , setPortfolio] = useState(new Map());
     const stockNames = useRef([]);
     let totalPnl = 0;
-    portfolio.forEach((value , key) =>{
+    portfolio.forEach((value) =>{
         totalPnl+= (value.ltp - value.buy) * value.qty
     });
     let totalInvested = 0;
-    portfolio.forEach((value , key) =>{
+    portfolio.forEach((value) =>{
         totalInvested+= (value.buy * value.qty)
     });
     let currentValue = 0;
-    portfolio.forEach((value , key) =>{
+    portfolio.forEach((value) =>{
         currentValue+= (value.ltp * value.qty);
     });
     const {ws}:any = useContext(WsContext);
-    const subscribe = (stock)=>{
+    const subscribe = (stock:any)=>{
             ws.send(JSON.stringify({
             type : "subscribe" , 
             stock :  stock
         }));
         }
        
-        const handleMessage = (event)=>{
+        const handleMessage = (event:any)=>{
       const data = JSON.parse(event.data);
         //  check if the data which is coming is in your portfolio or not
       
@@ -49,10 +49,10 @@ function Portfolio() {
         const getPort = async()=>{
             const res = await stockService.portfolio();
             const portfolio = res.portfolio.stocks; // arr of stock
-            stockNames.current = portfolio.map((stock)=>stock.name);
+            stockNames.current = portfolio.map((stock:any)=>stock.name);
             // subscribe to all who are in portfolio 
             const newMap = new Map();
-            portfolio.map((stock) =>{
+            portfolio.map((stock:any) =>{
                 newMap.set(stock.name , {
                    ...stock , ltp : stock.buy 
                 });

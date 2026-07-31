@@ -5,7 +5,7 @@ import { logout } from "../../../store/authSlice"
 function LogoutBtn() {
     const dispatch = useDispatch();
     const onLogout = async()=>{
-        const res = await authService.logout();
+        await authService.logout();
         dispatch(logout());
     }
   return (

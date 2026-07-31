@@ -5,17 +5,8 @@ import {
     CandlestickSeries
 } from "lightweight-charts";
 
-interface Props {
-    historyData: {
-        time: number;
-        open: number;
-        high: number;
-        low: number;
-        close: number;
-    }[];
-}
 
-function StockChart({ historyData , liveCandle }: Props) {
+function StockChart({ historyData , liveCandle }: any) {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<any>(null);
     const seriesRef = useRef<any>(null);

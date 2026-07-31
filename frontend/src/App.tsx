@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import {login, logout , setLoading, updateBalance} from '../store/authSlice'
+import {login, logout , setLoading} from '../store/authSlice'
 import authService from "./services/auth"
 import type { IRootState  , AppDispatch} from "../store/store"
 import WsContextProvider from "./contexts/WsContextProvider"
