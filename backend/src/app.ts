@@ -33,7 +33,7 @@ app.get(
     "/auth/google/callback",
     passport.authenticate("google", {
         session: false,
-        failureRedirect : "http://localhost:5173/"
+        failureRedirect : process.env.CLIENT_URL
     }),
     async(req, res) => {
         // now the user is logged in so add the jwt
@@ -68,7 +68,7 @@ app.get(
             secure : true , 
             sameSite : "none"
         });
-        res.redirect("http://localhost:5173/");
+        res.redirect(process.env.CLIENT_URL!);
     }
 );
 
