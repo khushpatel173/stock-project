@@ -5,13 +5,18 @@ import { map } from "./map.js";
 import { ws } from "../sockets/yahoo.websocket.js";
 import User from "../models/User.js";
 import mongoose from "mongoose";
-import { log } from "console";
 import { Transaction } from "../models/Transaction.js";
 
-async function purchaseStock(user:any , stock:any , qty:any , price:any , order:any){
+async function purchaseStock(userId:any , stock:any , qty:any , price:any , order:any){
          // now check if the user have enough balance to buy the stock
+
+         const session = await mongoose.startSession();
         try {
-            user = await User.findById(user);
+            session.startTransaction();
+           const user = await User.findById(userId).session(session);
+           if (!user) {
+            throw new Error("User not found");
+        }
 
         // now we have the user as well so check its balance
         
@@ -26,19 +31,19 @@ async function purchaseStock(user:any , stock:any , qty:any , price:any , order:
         // add the stock to the portfolio and reduce the balance
           const portfolio:any = await Port.findOne({
             owner : user._id
-        });
+        }).session(session);
         if(!portfolio){
             throw new Error("No portfolio found")
         }
         user.balanceLeft = userBalance - (Number(qty) * price);
-        await user.save();
+        await user.save({session});
          // add this transaction to the history
          const transaction = new Transaction({
             user : user._id,
             type : "BUY" , 
             amount :(Number(qty) * price)
          });
-         await transaction.save();
+         await transaction.save({session});
         const index = portfolio.stocks.findIndex((obj:any) => obj.name == stock);
         if(index == -1){
             // then this stock is not there just push
@@ -61,30 +66,48 @@ async function purchaseStock(user:any , stock:any , qty:any , price:any , order:
             }
         }
         // that means it already have that then we need to change the avg price and qty
-            await portfolio.save();
+            await portfolio.save({session});
 
        
          order.status = "EXECUTED";
          order.executedAt = Date.now();
          order.executedPrice = price;
-        await order.save();
+        await order.save({session});
+
+        await session.commitTransaction();
         } catch (error) {
-            order.status = "REJECTED";
-            await order.save();
-           throw new Error(`${error}`);
+           try {
+           console.log("error aborting transactions and reverting back");
+            
+         await session.abortTransaction();
+        order.status = "REJECTED";
+        await order.save();
+
+    } catch (saveError) {
+        console.error("Failed to update order status:", saveError);
+    }
+
+    throw error;
+        }finally{
+            session.endSession();
         }
     }
-async function soldStock(user:any , stock:any , qty:any , price:any , order:any){
-try {
-        user = await User.findById(user);
+async function soldStock(userId:any , stock:any , qty:any , price:any , order:any){
+     const session = await mongoose.startSession();
+    try {
+        session.startTransaction();
+        const user = await User.findById(userId).session(session);
         // now we have the user as well so check its balance
+        if (!user) {
+            throw new Error("User not found");
+        }
         const userBalance = user.balanceLeft;
         // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
 
         // add the stock to the portfolio and reduce the balance
           const portfolio:any = await Port.findOne({
             owner : user._id
-        });
+        }).session(session);
         if(!portfolio){
            throw new Error("Portfolio not found");
         }
@@ -112,24 +135,32 @@ try {
             if(portfolio.stocks[index]?.qty == 0){
                 portfolio.stocks.splice(index , 1);
             }
-            await portfolio.save();
+            await portfolio.save({session});
             
             user.balanceLeft = userBalance + (Number(qty) * price);
-            await user.save();
+            await user.save({session});
             const transaction = new Transaction({
             user : user._id,
             type : "SELL" , 
             amount : (Number(qty) * price)
          });
-         await transaction.save();
+         await transaction.save({session});
         order.status = "EXECUTED";
          order.executedAt = Date.now();
          order.executedPrice = price;
-    await order.save();
+    await order.save({session});
+    await session.commitTransaction();
         } catch (error) {
-            order.status = "REJECTED";
-            await order.save();
-           throw new Error(`${error}`);
+              try {
+         await session.abortTransaction();
+        order.status = "REJECTED";
+        await order.save();
+    } catch (saveError) {
+        console.error("Failed to update order status:", saveError);
+    }
+    throw error;
+        }finally{
+            session.endSession();
         }
     }  
 async function buyStock(user:any , stock:any , qty:any , price:any , order:any){

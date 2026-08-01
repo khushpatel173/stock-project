@@ -1,18 +1,16 @@
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
-import {useAsyncError, useParams} from 'react-router-dom'
+import {useParams} from 'react-router-dom'
 import { useContext } from 'react';
 import WsContext from '../contexts/WsContext';
 import stockService from '../services/stock';
 import StockChart from './StockChart';
-import { useNavigate} from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { updateBalance } from '../../store/authSlice';
 function Detail() {
    const range = '1d'
    const dispatch = useDispatch();
    const lastCandleRef : any = useRef(null);
-   const navigate = useNavigate();
    const interval = '1m' // this are the default values can change as well
     // take the id from the params and then ask the backend to give data about this stock and then whatever the backend gives show it here
     const {id} = useParams();
@@ -243,7 +241,7 @@ function Detail() {
               setFormBuy(false);
               setCheckBuy(false)
             }}>Cancel</button>
-       <button disabled={buyLoading} className="trade-modal__btn trade-modal__btn--confirm trade-modal__btn--buy" onClick={async(e:any)=>{
+       <button disabled={buyLoading} className="trade-modal__btn trade-modal__btn--confirm trade-modal__btn--buy" onClick={async()=>{
               try {
                if(buyLoading){
                 return;
