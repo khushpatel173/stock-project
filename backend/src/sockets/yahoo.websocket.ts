@@ -38,7 +38,7 @@ export function initWebSocket (server:any){
             const parsed = JSON.parse(message.toString());
             const buffer = Buffer.from(parsed.message, "base64");
             const decoded = PricingData.decode(buffer);
-            console.log(decoded);
+            console.log(decoded); // giving us the msg that yahoo ws has sent
             priceMap.set(decoded.id , decoded.price);
 
             // check if there are any orders for this stocks and if there are then execute them if you can

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
-import {useParams} from 'react-router-dom'
+import {useAsyncError, useParams} from 'react-router-dom'
 import { useContext } from 'react';
 import WsContext from '../contexts/WsContext';
 import stockService from '../services/stock';
@@ -28,6 +28,8 @@ function Detail() {
    const [sellLimit, setSellLimit] = useState(0);
    const [liveCandle, setLiveCandle] = useState(null);
    const [loading , setLoading] = useState(true);
+   const [buyLoading , setBuyLoading] = useState(false);
+   const [sellLoading , setSellLoading] = useState(false);
      const updateCurrentCandle = (price : any)=>{
         if(!lastCandleRef.current){
             return;
@@ -241,21 +243,32 @@ function Detail() {
               setFormBuy(false);
               setCheckBuy(false)
             }}>Cancel</button>
-            <button className="trade-modal__btn trade-modal__btn--confirm trade-modal__btn--buy" onClick={async()=>{
+       <button disabled={buyLoading} className="trade-modal__btn trade-modal__btn--confirm trade-modal__btn--buy" onClick={async(e:any)=>{
               try {
+               if(buyLoading){
+                return;
+               } 
+             setBuyLoading(true);
                const res =  await stockService.buy(data.id , qty ,data.price , buyLimit ,checkBuy);
-               console.log(res);
-               if(res){
-                alert("Successfully purchased");
-               }
+              //  console.log(res);
+              //  if(res){
+              //   alert("Successfully purchased");
+              //  }
                setFormBuy(false);
               //  set the balance
                dispatch(updateBalance(res.user))
-               navigate("/portfolio")
+               alert("Successfully purchased");
+              //  navigate("/portfolio")
+              // give a message of successfully purchased
               } catch (error:any) {
+                // give a msg of error
+                alert(`Cant buy the stock due to some error`);
                 console.log("error :" , error.message);  
+              }finally{
+                setBuyLoading(false);
               }
-            }}>Confirm Buy</button>
+            }}>{buyLoading ? "Placing Order" : "Confirm Buy"}</button>
+           
           </div>
         </div>
       </div>}
@@ -324,23 +337,26 @@ function Detail() {
               setFormSell(false);
               setCheckSell(false);
             }}>Cancel</button>
-            <button className="trade-modal__btn trade-modal__btn--confirm trade-modal__btn--sell" onClick={async()=>{
+            <button disabled={sellLoading} className="trade-modal__btn trade-modal__btn--confirm trade-modal__btn--sell" onClick={async()=>{
               try {
-               const res =  await stockService.sell(data.id , qty , data.price , sellLimit , checkSell);
-               console.log(res);
-               if(res){
-                
-                alert("Successfully Sold");
+               if(sellLoading) {
+                return; // avoid dbl clicks
                }
+               setSellLoading(true);
+               const res =  await stockService.sell(data.id , qty , data.price , sellLimit , checkSell);
                 setFormSell(false);
                 setCheckSell(false);
                 dispatch(updateBalance(res.user))
+                alert("Successfully Sold");
               } catch (error:any) {
+                alert("Some error occured");
                 console.log("error :" , error.message);  
+              }finally{
+                setSellLoading(false);
               }
              
               
-            }}>Confirm Sell</button>
+            }}>{sellLoading ? "Placing Order" : "Confirm Sell"}</button>
           </div>
         </div>
       </div>}

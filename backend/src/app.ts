@@ -61,7 +61,7 @@ app.get(
      const token = jwt.sign({
         userId : req.user?._id
      } , process.env.JWT_SECRET! , {
-        expiresIn : "1d"
+        expiresIn : "7d"
      });
      res.cookie("token" , token , {
             httpOnly : true , 
