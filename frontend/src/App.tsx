@@ -26,6 +26,7 @@ function App() {
     }
   useEffect(()=>{
     // take the data about the user weather he is logged in or not and store it in the store
+      authService.captureLoginToken();
     getUser();
   } , [])
 

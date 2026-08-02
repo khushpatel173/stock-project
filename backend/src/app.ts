@@ -14,6 +14,13 @@ import dotenv from 'dotenv'
 
 dotenv.config();
 const app = express();
+const isProduction = true;
+const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' as const : 'lax' as const,
+    path: '/',
+};
 
 app.use(express.json());
 app.use(cors({
@@ -75,12 +82,8 @@ app.get(
      } , process.env.JWT_SECRET! , {
         expiresIn : "7d"
      });
-     res.cookie("token" , token , {
-            httpOnly : true , 
-            secure : true , 
-            sameSite : "none" , 
-        });
-        res.redirect(process.env.CLIENT_URL!);
+      res.cookie("token" , token , cookieOptions);
+          res.redirect(`${process.env.CLIENT_URL!}#token=${encodeURIComponent(token)}`);
     }
 );
 
@@ -105,11 +108,7 @@ app.get("/profile", authMiddleware, async(req ,res)=>{
 
 })
 app.get("/logout" , (req ,res)=>{
-    res.clearCookie("token" , {
-        httpOnly : true , 
-        secure : true , 
-        sameSite : "none"
-    })
+    res.clearCookie("token" , cookieOptions)
      res.json({
         message: "Logged out successfully"
     });
