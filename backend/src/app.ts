@@ -18,7 +18,8 @@ const app = express();
 app.use(express.json());
 app.use(cors({
     origin: process.env.CLIENT_URL,
-    credentials: true 
+    credentials: true , 
+    exposedHeaders: ["set-cookie"]
 }));
 
 // cookie related reddit tip
@@ -77,7 +78,7 @@ app.get(
      res.cookie("token" , token , {
             httpOnly : true , 
             secure : true , 
-            sameSite : "none"
+            sameSite : "none" , 
         });
         res.redirect(process.env.CLIENT_URL!);
     }
