@@ -20,6 +20,10 @@ app.use(cors({
     origin: process.env.CLIENT_URL,
     credentials: true 
 }));
+
+// cookie related reddit tip
+app.set('trust proxy' , true);
+
 app.use(cookieParser());
 app.use(passport.initialize());
 
@@ -71,8 +75,8 @@ app.get(
         expiresIn : "7d"
      });
      res.cookie("token" , token , {
-            // httpOnly : true , 
-            // secure : true , 
+            httpOnly : true , 
+            secure : true , 
             sameSite : "none"
         });
         res.redirect(process.env.CLIENT_URL!);
@@ -101,8 +105,8 @@ app.get("/profile", authMiddleware, async(req ,res)=>{
 })
 app.get("/logout" , (req ,res)=>{
     res.clearCookie("token" , {
-        // httpOnly : true , 
-        // secure : true , 
+        httpOnly : true , 
+        secure : true , 
         sameSite : "none"
     })
      res.json({
