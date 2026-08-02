@@ -44,6 +44,13 @@ app.get(
     // });
     // await portfolio.save();
 
+    const user = await User.findById(req.user?._id);
+    if(!user){
+        res.status(401).json({
+            message : "User not found"
+        });
+    }
+
     let portfolio:any = await Port.findOne({
         owner : req.user!._id
     });
@@ -54,7 +61,7 @@ app.get(
     });
     await portfolio.save();
     }
-    const user = await User.findById(req.user?._id);
+
     await user?.updateOne({
         portfolio : portfolio._id
     });
@@ -64,8 +71,8 @@ app.get(
         expiresIn : "7d"
      });
      res.cookie("token" , token , {
-            httpOnly : true , 
-            secure : true , 
+            // httpOnly : true , 
+            // secure : true , 
             sameSite : "none"
         });
         res.redirect(process.env.CLIENT_URL!);
@@ -94,8 +101,8 @@ app.get("/profile", authMiddleware, async(req ,res)=>{
 })
 app.get("/logout" , (req ,res)=>{
     res.clearCookie("token" , {
-        httpOnly : true , 
-        secure : true , 
+        // httpOnly : true , 
+        // secure : true , 
         sameSite : "none"
     })
      res.json({

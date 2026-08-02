@@ -8,8 +8,9 @@ import User from '../models/User.js';
   export async function authMiddleware(req:any , res:any , next:any){
 
     try {
+        console.log(req.cookies);
         const token = req.cookies.token;
-   if (!token) {
+        if (!token) {
             return res.status(401).json({
                 message: "Not authenticated"
             });
