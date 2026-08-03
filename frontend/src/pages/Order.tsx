@@ -3,7 +3,22 @@ import { useSelector} from 'react-redux'
 import stockService from '../services/stock';
 import { useContext } from 'react';
 import WsContext from '../contexts/WsContext';
+import toast from 'react-hot-toast';
+import axios from 'axios';
 export default function Order() {
+    const getApiErrorMessage = (error: any) => {
+  console.log(error);
+
+  if (axios.isAxiosError(error)) {  
+    return error.response?.data?.error || error.response?.data?.message || error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Some error occurred';
+};
     const {ws}:any = useContext(WsContext);
     const userData:any = useSelector((state:any) => (state.auth.userData));
     const [orders , setOrders] = useState([]);
@@ -29,7 +44,8 @@ export default function Order() {
       return;
     }
     const getOrders = async()=>{
-      const res = await stockService.getOrder();
+      try {
+         const res = await stockService.getOrder();
       const orders = res.orders;
       console.log(orders);
       
@@ -46,6 +62,11 @@ export default function Order() {
                 return order;
             });
           setStockPrice(newMap);
+      } catch (error) {
+        const message = getApiErrorMessage(error);
+        toast.error(message);
+      }
+     
     }
     getOrders();
      ws.addEventListener("message" ,handleMessage);

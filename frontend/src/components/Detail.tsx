@@ -7,6 +7,22 @@ import stockService from '../services/stock';
 import StockChart from './StockChart';
 import { useDispatch } from 'react-redux';
 import { updateBalance } from '../../store/authSlice';
+import toast from 'react-hot-toast';
+
+const getApiErrorMessage = (error: any) => {
+  console.log(error);
+
+  if (axios.isAxiosError(error)) {  
+    return error.response?.data?.error || error.response?.data?.message || error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Some error occurred';
+};
+
 function Detail() {
    const range = '1d'
    const dispatch = useDispatch();
@@ -112,7 +128,9 @@ function Detail() {
           });
           setLoading(false);
             } catch (error : any) {
-              console.log("Error :" , error.message)
+              // console.log("Error :" , error.message)
+              const message = getApiErrorMessage(error);
+              toast.error(message);
             }
            
         }
@@ -248,20 +266,16 @@ function Detail() {
                } 
              setBuyLoading(true);
                const res =  await stockService.buy(data.id , qty ,data.price , buyLimit ,checkBuy);
-              //  console.log(res);
-              //  if(res){
-              //   alert("Successfully purchased");
-              //  }
                setFormBuy(false);
               //  set the balance
                dispatch(updateBalance(res.user))
-               alert("Successfully purchased");
+              //  alert("Successfully purchased");
+              toast.success("Successfully purchased");
               //  navigate("/portfolio")
               // give a message of successfully purchased
               } catch (error:any) {
-                // give a msg of error
-                alert(`Cant buy the stock due to some error`);
-                console.log("error :" , error.message);  
+                const message = getApiErrorMessage(error);
+                toast.error(message);
               }finally{
                 setBuyLoading(false);
               }
@@ -345,10 +359,10 @@ function Detail() {
                 setFormSell(false);
                 setCheckSell(false);
                 dispatch(updateBalance(res.user))
-                alert("Successfully Sold");
+               toast.success("Successfully sold");
               } catch (error:any) {
-                alert("Some error occured");
-                console.log("error :" , error.message);  
+                  const message = getApiErrorMessage(error);
+                  toast.error(message);
               }finally{
                 setSellLoading(false);
               }
@@ -358,7 +372,6 @@ function Detail() {
           </div>
         </div>
       </div>}
-
       {historyData.length > 0 && 
         <div className="detail-page__chart-container">
           <StockChart historyData={historyData} liveCandle={liveCandle}/>

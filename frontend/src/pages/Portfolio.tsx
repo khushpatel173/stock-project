@@ -3,8 +3,23 @@ import stockService from "../services/stock";
 import { useContext } from "react";
 import WsContext from "../contexts/WsContext";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 function Portfolio() {
+  const getApiErrorMessage = (error: any) => {
+  console.log(error);
+
+  if (axios.isAxiosError(error)) {  
+    return error.response?.data?.error || error.response?.data?.message || error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Some error occurred';
+};
     const [portfolio , setPortfolio] = useState(new Map());
     const [loading , setLoading] = useState(true);
     const stockNames = useRef([]);
@@ -48,6 +63,7 @@ function Portfolio() {
         // as the page loads fetch the portfolio of the logged in user
        
         const getPort = async()=>{
+          try {
             const res = await stockService.portfolio();
 
             console.log(res);
@@ -78,8 +94,12 @@ function Portfolio() {
         else{
 ws.addEventListener("open" , ()=>{subscribe(stockNames.current)});
         }
+          } catch (error) {
+            const message = getApiErrorMessage(error);
+            toast.error(message);
+          }
+            
     }
-        // now they are also subscribed
         getPort();
         return ()=>{
         ws.removeEventListener("message", handleMessage);

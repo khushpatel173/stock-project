@@ -5,6 +5,7 @@ import authService from "./services/auth"
 import type { IRootState  , AppDispatch} from "../store/store"
 import WsContextProvider from "./contexts/WsContextProvider"
 import { Outlet } from "react-router-dom"
+import { Toaster } from "react-hot-toast"
 function App() {
   const dispatch = useDispatch<AppDispatch>();
   const loading = useSelector((state : IRootState) => state.auth.loading);
@@ -40,6 +41,7 @@ function App() {
     }
   return (
    <> 
+  <Toaster/>
    <WsContextProvider>
     <Outlet/>
     </WsContextProvider>

@@ -1,7 +1,23 @@
 import { useSelector } from "react-redux"
 import { useEffect, useState } from "react";
 import stockService from "../services/stock";
+import toast from "react-hot-toast";
+import axios from "axios";
+
 function Profile() {
+    const getApiErrorMessage = (error: any) => {
+  console.log(error);
+
+  if (axios.isAxiosError(error)) {  
+    return error.response?.data?.error || error.response?.data?.message || error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Some error occurred';
+};
     let user = useSelector((state:any) => state.auth.userData);
     const [transactions , setTransactions] = useState([]);
     const [loading , setLoading] = useState(true);
@@ -16,7 +32,8 @@ function Profile() {
           }
            console.log(response.transactions);
         } catch (error) {
-          console.log(error);
+         const message = getApiErrorMessage(error);
+         toast.error(message);
         }
       }
       getTransactions();

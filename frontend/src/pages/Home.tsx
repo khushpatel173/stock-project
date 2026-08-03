@@ -1,8 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import type { IRootState } from '../../store/store'
-
+import toast from 'react-hot-toast';
 function Home() {
+  const params = new URLSearchParams(window.location.search);
+  const error = params.get("error");
+  if (error === "oauth_failed") {
+    toast.error("Google login failed. Please try again.");
+}
   const navigate = useNavigate();
   const isLoggedIn = useSelector((state: IRootState) => state.auth.isLoggedIn);
   return (

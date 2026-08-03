@@ -1,15 +1,28 @@
 import axios from "axios";
 import { useEffect, useState } from "react"
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 function Search() {
     const[search , setSearch] = useState("");
     const[stocks , setStocks] = useState([]);
     const serverUrl = import.meta.env.VITE_SERVER_URL;
+    const getApiErrorMessage = (error: any) => {
+  console.log(error);
+
+  if (axios.isAxiosError(error)) {  
+    return error.response?.data?.error || error.response?.data?.message || error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Some error occurred';
+};
     useEffect(()=>{
         // whenever the search changes we will get the data from the backend and dispaly in the lists
         if (!search.trim()) {
              setStocks([]);
-
             return};
 
         const timer = setTimeout(async()=>{
@@ -17,12 +30,12 @@ function Search() {
                     // this will run if the user have not typed anything in 300ms
             const res = await axios.get(`${serverUrl}/getStocks/${search}`);
             // res.data will give you the data
-                console.log(res.data.stockData);
-                
+                console.log(res.data.stockData);    
                 setStocks(res.data.stockData);
-            
             } catch (error) {
-                console.log(error);
+                // console.log(error);
+                const message = getApiErrorMessage(error);
+                toast.error(message);
             }
         
            

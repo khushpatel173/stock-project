@@ -48,6 +48,7 @@ app.get(
         failureRedirect : process.env.CLIENT_URL
     }),
     async(req, res) => {
+        
         // now the user is logged in so add the jwt
 
         // make a portfolio and add the user 
@@ -55,8 +56,8 @@ app.get(
     //         owner : req.user?._id
     // });
     // await portfolio.save();
-
-    const user = await User.findById(req.user?._id);
+        try {
+         const user = await User.findById(req.user?._id);
     if(!user){
         res.status(401).json({
             message : "User not found"
@@ -83,7 +84,11 @@ app.get(
         expiresIn : "7d"
      });
       res.cookie("token" , token , cookieOptions);
-          res.redirect(`${process.env.CLIENT_URL!}#token=${encodeURIComponent(token)}`);
+          res.redirect(`${process.env.CLIENT_URL!}#token=${encodeURIComponent(token)}`);   
+        } catch (error) {
+           console.log(error);
+           res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
+        }
     }
 );
 
@@ -126,8 +131,7 @@ app.get("/getStocks/:stock" , async(req ,res)=>{
         stockData : requiredStocks
     });  
     } catch (error) {
-        console.log(error);
-        res.status(401).json({error});
+        res.status(401).json({error : "Error occured in fetching the stock"});
     }
     
 })
@@ -140,9 +144,10 @@ app.get("/history/:stock" ,async(req ,res)=>{
     const response = await ans.json();
     const data = response.chart.result[0].indicators.quote[0];
     if(!data.open){
-        return res.status(401).json({
-            message : "There is no enough data available"
-        });
+        // return res.status(401).json({
+        //     message : "There is no enough data available"
+        // });
+        throw new Error("There is no enough data available");
     } 
     let timeData = response.chart.result[0].timestamp;
     timeData = [...new Set(timeData)];
@@ -177,9 +182,9 @@ app.get("/history/:stock" ,async(req ,res)=>{
         lastCandle : updatedData[updatedData.length-1]
     }); 
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.status(401).json({
-            error
+            error : error instanceof Error ? error.message :  "Some error occured"
         })
     }
     
@@ -195,16 +200,18 @@ app.post("/buy/:stock" , authMiddleware ,  async(req ,res)=>{
     const {reqPrice , orderType , limitPrice} = req.body;
     
     if(!price){ // that means no stock is found that means no live data
-        return res.status(404).json({
-        message: "No live data available for this stock",
-    });
+    //     return res.status(404).json({
+    //     message: "No live data available for this stock",
+    // });
+    throw new Error("No live data available for this stock");
 }
 
 const user = req.user;
         if(!user){
-             return res.status(404).json({
-                message: "User not found"
-            });
+            //  return res.status(404).json({
+            //     message: "User not found"
+            // });
+            throw new Error("User not found");
         }
 
         const order = new Order(
@@ -230,7 +237,7 @@ const user = req.user;
     } catch (error) {
         
       res.status(401).json({
-               error : "Some error occured"
+               error : error instanceof Error ? error.message :  "Some error occured"
             });  
     }
 })
@@ -243,16 +250,18 @@ app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
     // now we need the latest price of the stocks
     const price = priceMap.get(stock);
     if(!price){ // that means no stock is found that means no live data
-        return res.status(404).json({
-        message: "No live data available for this stock",
-    });
+    //     return res.status(404).json({
+    //     message: "No live data available for this stock",
+    // });
+    throw new Error("No live data available for this stock");
     }
     // now check if the user have enough balance to buy the stock
           const user = req.user;
         if(!user){
-             return res.status(404).json({
-                message: "User not found"
-            });
+            //  return res.status(404).json({
+            //     message: "User not found"
+            // });
+            throw new Error("User not found");
         }
          const order = new Order(
             {
@@ -275,8 +284,8 @@ app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
                         user : user});
     } catch (error) {
         res.status(401).json({
-               error : "Some error occured"
-            });  
+               error : error instanceof Error ? error.message : "Some error occured"
+        });  
     }
 });
 
@@ -285,25 +294,25 @@ app.get("/portfolio" ,authMiddleware, async(req ,res)=>{
     try {
         const user:any = req.user;
         if(!user){
-             return res.status(404).json({
-                message: "User not found"
-            });
+            //  return res.status(404).json({
+            //     message: "User not found"
+            // });
+            throw new Error("User not found");
         }
         // fetch the portfolio of the user
         const portfolio = await Port.findById(user.portfolio);
         if(!portfolio){
-             return res.status(404).json({
-                message: "PortFolio cant be fetched"
-            });
+            //  return res.status(404).json({
+            //     message: "PortFolio cant be fetched"
+            // });
+            throw new Error("PortFolio cant be fetched");
         }
-        console.log(portfolio);
-        
        res.status(201).json({
         portfolio : portfolio
        });
     } catch (error) {
          res.status(401).json({
-        error : "Some error occured"
+        error : error instanceof Error ? error.message : "Some error occured"
        });
     }
 
@@ -313,18 +322,18 @@ app.get("/orders" , authMiddleware , async(req ,res)=>{
     try {
         const user:any = req.user;
     if(!user){
-        res.status(401).json(
-            {
-                message : "User not found"
-            }
-        );
+        // res.status(401).json(
+        //     {
+        //         message : "User not found"
+        //     }
+        // );
+        throw new Error("User not found");
     }
     // find all the order of this user
 
 
 
     // check
-    
     const orders = await Order.find({
        user : user._id
     }).sort({createdAt : -1});
@@ -334,7 +343,7 @@ app.get("/orders" , authMiddleware , async(req ,res)=>{
     });
 
     } catch (error) {
-        throw new Error(`error : ${error}`);
+        res.status(401).json({error : error instanceof Error ? error.message : "Some error occured"});
     }
     
 })
@@ -343,23 +352,25 @@ app.get("/transactions" , authMiddleware , async(req ,res)=>{
     try {
         const user:any = req.user;
          if(!user){
-        res.status(401).json(
-            {
-                message : "User not found"
-            }
-        );
+        // res.status(401).json(
+        //     {
+        //         message : "User not found"
+        //     }
+        // );
+        throw new Error("User not found");
     }
     // get all the transactions of this user
     const transaction = await Transaction.find({
         user : user._id
     }).sort({createdAt : -1}); // we will get the latest transaction first
+
     res.status(201).json({
         transactions : transaction
     });
     } catch (error) {
          res.status(401).json(
             {
-                message : "Some error occured"
+                error : error instanceof Error ? error.message :  "Some error occured"
             }
         );
     }
