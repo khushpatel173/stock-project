@@ -25,14 +25,15 @@ let activeSubscription:any = [];
         });
 
 export function initWebSocket (server:any){
-        
-        const ws2 = new WebSocketServer({
+    try {
+          const ws2 = new WebSocketServer({
             server
         });
     
        
             ws.on("message", async(message) => {
-            const root = await protobuf.load("protobuf/PricingData.proto")
+                try {
+                      const root = await protobuf.load("protobuf/PricingData.proto")
             const PricingData = root.lookupType("PricingData");
             // console.log(typeof message);
             const parsed = JSON.parse(message.toString());
@@ -131,7 +132,10 @@ export function initWebSocket (server:any){
             }));
         }
             })
-    
+    //
+                } catch (error:any) {
+                  console.log("Some error : " , error.message); 
+                }
         });
 
     
@@ -197,5 +201,10 @@ export function initWebSocket (server:any){
                 }
             })
         })
+    } catch (error) {
+        console.log("Some error occued");
+    }
+        
+      
 }
 

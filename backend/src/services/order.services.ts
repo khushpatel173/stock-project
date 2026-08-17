@@ -73,7 +73,6 @@ async function purchaseStock(userId:any , stock:any , qty:any , price:any , orde
          order.executedAt = Date.now();
          order.executedPrice = price;
         await order.save({session});
-
         await session.commitTransaction();
         } catch (error) {
            try {
@@ -169,8 +168,8 @@ async function buyStock(user:any , stock:any , qty:any , price:any , order:any){
     // Limiting price is in thhe order.requested Price                                                                 
    if (!orderBuy.has(stock)) {
     orderBuy.set(stock, []);
-}
-orderBuy.get(stock)!.push(order);
+    }
+    orderBuy.get(stock)!.push(order);
     // subscribe it as well
      if(map.has(stock)){
                              map.set(stock , map.get(stock) + 1);

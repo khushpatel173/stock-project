@@ -113,15 +113,17 @@ function Detail() {
            const getData = async()=>{
             try {
               const serverUrl = import.meta.env.VITE_SERVER_URL;
-               const response = await axios.get(`${serverUrl}/history/${id}?range=${range}&interval=${interval}`);
+             const response = await axios.get(`${serverUrl}/history/${id}?range=${range}&interval=${interval}`);
            console.log(response.data.historyData);
             lastCandleRef.current = response.data.lastCandle;
+            console.log(lastCandleRef.current);
+            
            setLiveCandle(response.data.lastCandle);
             setHistoryData(response.data.historyData);
           const last_price = response.data.lastCandle.close;
           setData({
             id : id , 
-            price : last_price ,
+            price : last_price , // ltp
             change : 0,
             changePercent : 0 , 
             text : "Last traded Price"
@@ -134,7 +136,7 @@ function Detail() {
             }
            
         }
-        getData();
+        getData();  
       
         return ()=>{
             ws.removeEventListener("message", handleEvent);
