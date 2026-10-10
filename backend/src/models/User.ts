@@ -30,7 +30,9 @@ const userSchema = new mongoose.Schema<IUser>({
       type : Number , 
       default : 1000000
      } , 
-});
+})
+
+;
 
 const User = mongoose.model<IUser>("User" , userSchema);
 export default User;

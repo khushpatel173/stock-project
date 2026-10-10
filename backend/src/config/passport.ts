@@ -13,13 +13,13 @@ passport.use(new Strategy({
     // check if the user is there in the db if he is not then add him to the db
 
     const email = profile.emails?.[0]?.value;
-const picture = profile.photos?.[0]?.value;
+    const picture = profile.photos?.[0]?.value;
 if (!email) {
     return done(new Error("Google account has no email"));
 }
     try {
-        let user : any = await User.findOne({
-        email : email
+        let user = await User.findOne({
+        email
     });
 
      if (!user) {
@@ -33,7 +33,11 @@ if (!email) {
 
     done(null, user);
     } catch (error) {
-         done(error as Error);
+         done(
+        error instanceof Error
+            ? error
+            : new Error("Google authentication failed")
+    );
     }
     
 }));

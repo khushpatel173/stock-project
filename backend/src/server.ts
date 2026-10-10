@@ -11,7 +11,7 @@ export function startServer(){
     // initialize websockets server and the whole logic
     initWebSocket(server);
     const PORT = process.env.PORT || 8080;
-server.listen( PORT, ()=>{
+    server.listen( PORT, ()=>{
     console.log("Server listening to port 8080");
 });
 }

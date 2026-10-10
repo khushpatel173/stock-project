@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config();
 // const dbUrl = "mongodb://127.0.0.1:27017/trading-app";
-const dbUrl:any = process.env.MONGO_URL;
+const dbUrl: string =  process.env.MONGO_URL as string;
 // main().then(()=>{
 //     console.log("connection successful");
 // }).catch((err)=>{
@@ -13,7 +13,7 @@ const dbUrl:any = process.env.MONGO_URL;
    
 // }
 
-export async function connectDb(){
+export async function connectDb() : Promise<void>{
     await mongoose.connect(dbUrl);
 }
 

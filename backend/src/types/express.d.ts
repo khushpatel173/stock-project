@@ -1,7 +1,7 @@
 import User from "../models/User.ts";
 
 interface IUser {
-    _id: string;
+    _id: Types.ObjectId;
     name: string;
     email: string;
     picture: string;
