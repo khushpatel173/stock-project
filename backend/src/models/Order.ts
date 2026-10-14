@@ -1,16 +1,16 @@
 import mongoose from "mongoose";
 import {Types} from 'mongoose'
 
-enum orderType{
+export enum orderType{
     BUY="BUY" , SELL="SELL"
 }
-enum status {
+export enum status {
     PENDING="PENDING" , EXECUTED="EXECUTED" , REJECTED="REJECTED"
 }
 enum type {
     Market="Market" , Limit="Limit"
 }
-interface Order {
+export interface orderSchema {
     user : Types.ObjectId , 
     type : orderType , 
     status : status , 
@@ -23,7 +23,7 @@ interface Order {
     qty : number
 };
 
-const orderSchema = new mongoose.Schema<Order>({
+const orderSchema = new mongoose.Schema<orderSchema>({
     user : {
         type : mongoose.Schema.Types.ObjectId , 
         ref : "User" , 
@@ -67,5 +67,5 @@ const orderSchema = new mongoose.Schema<Order>({
     }
 });
 
-const Order = mongoose.model<Order>("Order" , orderSchema);
+const Order = mongoose.model<orderSchema>("Order" , orderSchema);
 export default Order;

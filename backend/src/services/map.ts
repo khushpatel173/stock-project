@@ -1,29 +1,43 @@
 import Order from "../models/Order.js";
+import { orderType , status } from "../models/Order.js";
 
 
-const map = new Map(); // this is a subscription map 
- const priceMap = new Map(); // this is a price map
-const orderBuy = new Map();
-const orderSell = new Map();
+type orderDocument = InstanceType<typeof Order>;
+
+
+        const map = new Map<string , number>(); // this is a subscription map 
+        const priceMap = new Map<string , number>(); // this is a price map
+        const orderBuy = new Map<string , orderDocument[]>();
+        const orderSell = new Map<string , orderDocument[]>();
 
 // as the server starts fetch the data from the backend if there is any
-    const fetchPendingOrders = async()=>{
+    const fetchPendingOrders = async() : Promise<void>=>{
         try {
              const orders = await Order.find({
-            status : "PENDING" , 
+            status : status.PENDING , 
         });
        for(const order of orders){
-        if(order.type == "BUY"){
-                if(!orderBuy.has(order.symbol)){
-           orderBuy.set(order.symbol , []);
-        }
-            orderBuy.get(order.symbol).push(order);
+        if(order.type == orderType.BUY){
+
+            const existingOrders = orderBuy.get(order.symbol);
+
+            if(existingOrders){
+                existingOrders.push(order);
+            }
+            else {
+                orderBuy.set(order.symbol, [order]);
+            }
         }
         else{
-            if(!orderSell.has(order.symbol)){
-           orderSell.set(order.symbol , []);
-        }
-            orderSell.get(order.symbol).push(order);
+
+            const existingOrders = orderSell.get(order.symbol);
+
+            if(existingOrders){
+                existingOrders.push(order);
+            }
+            else {
+                orderSell.set(order.symbol, [order]);
+            }
         }
        }
         } catch (error) {
