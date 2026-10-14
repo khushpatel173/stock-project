@@ -13,3 +13,16 @@ declare global {
         interface User extends IUser {}
     }
 }
+
+
+import type User from "../models/User.js";
+
+type UserDocument = InstanceType<typeof User>;
+
+declare global {
+    namespace Express {
+        interface User extends UserDocument {}
+    }
+}
+
+export {};

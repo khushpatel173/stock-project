@@ -7,10 +7,15 @@ import { orderBuy , orderSell } from "./map.js";
 import { map } from "./map.js";
 import { ws } from "../sockets/yahoo.websocket.js";
 import User from "../models/User.js";
-import mongoose from "mongoose";
-import { Transaction } from "../models/Transaction.js";
+import mongoose, { Types } from "mongoose";
+import { Transaction , transactionType } from "../models/Transaction.js";
+import { orderType, status, type } from "../models/Order.js";
+import Order from "../models/Order.js";
+type userId = string | Types.ObjectId;
+type OrderDocument = InstanceType<typeof Order>;
 
-async function purchaseStock(userId:any , stock:any , qty:any , price:any , order:any){
+
+async function purchaseStock(userId:userId , stock:string , qty:number , price:number , order:OrderDocument) : Promise<void>{
          // now check if the user have enough balance to buy the stock
 
          const session = await mongoose.startSession();
@@ -32,22 +37,23 @@ async function purchaseStock(userId:any , stock:any , qty:any , price:any , orde
         // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
 
         // add the stock to the portfolio and reduce the balance
-          const portfolio:any = await Port.findOne({
+          const portfolio = await Port.findOne({
             owner : user._id
         }).session(session);
         if(!portfolio){
             throw new Error("No portfolio found")
         }
+
         user.balanceLeft = userBalance - (Number(qty) * price);
         await user.save({session});
          // add this transaction to the history
          const transaction = new Transaction({
             user : user._id,
-            type : "BUY" , 
+            type : transactionType.BUY , 
             amount :(Number(qty) * price)
          });
          await transaction.save({session});
-        const index = portfolio.stocks.findIndex((obj:any) => obj.name == stock);
+        const index = portfolio.stocks.findIndex((obj) => obj.name == stock);
         if(index == -1){
             // then this stock is not there just push
                portfolio.stocks.push({
@@ -72,8 +78,8 @@ async function purchaseStock(userId:any , stock:any , qty:any , price:any , orde
             await portfolio.save({session});
 
        
-         order.status = "EXECUTED";
-         order.executedAt = Date.now();
+         order.status = status.EXECUTED;
+         order.executedAt = new Date(Date.now());
          order.executedPrice = price;
         await order.save({session});
         await session.commitTransaction();
@@ -82,7 +88,7 @@ async function purchaseStock(userId:any , stock:any , qty:any , price:any , orde
            console.log("error aborting transactions and reverting back");
             
          await session.abortTransaction();
-        order.status = "REJECTED";
+        order.status = status.REJECTED;
         await order.save();
 
     } catch (saveError) {
@@ -94,7 +100,7 @@ async function purchaseStock(userId:any , stock:any , qty:any , price:any , orde
             session.endSession();
         }
     }
-async function soldStock(userId:any , stock:any , qty:any , price:any , order:any){
+async function soldStock(userId:userId , stock:string , qty:number , price:number , order:OrderDocument):Promise<void>{
      const session = await mongoose.startSession();
     try {
         session.startTransaction();
@@ -107,34 +113,34 @@ async function soldStock(userId:any , stock:any , qty:any , price:any , order:an
         // now the user have balance also the user exist also and also we have the live price of the stock then make the purchase
 
         // add the stock to the portfolio and reduce the balance
-          const portfolio:any = await Port.findOne({
+          const portfolio = await Port.findOne({
             owner : user._id
         }).session(session);
         if(!portfolio){
            throw new Error("Portfolio not found");
         }
-    const index = portfolio.stocks.findIndex((obj:any) => obj.name == stock);
+    const index = portfolio.stocks.findIndex((obj) => obj.name == stock);
     if(index == -1){
         // that means we dont have this stock
        throw new Error("You dont have this stock")
         }
             // that means we have this stock now check if we have enought qty
-            if(Number(qty) > portfolio.stocks[index].qty){
+            if(Number(qty) > portfolio.stocks[index]!.qty){
               throw new Error("You dont have enough quantity of this stock");
             }
 
             // now you have enought qty so you can sell
             // we will dec the qty of the stock and if the qty becomes zero we will remove it
-            const oldQty = portfolio.stocks[index]?.qty;
-            const oldPrice = portfolio.stocks[index]?.buy;
+            const oldQty = portfolio.stocks[index]!.qty;
+            const oldPrice = portfolio.stocks[index]!.buy;
             portfolio.stocks[index] = {
                 name : stock , 
                 qty : oldQty - Number(qty),
                 buy : oldPrice , 
-                purchasedDate : portfolio.stocks[index]?.purchasedDate
+                purchasedDate : portfolio.stocks[index]!.purchasedDate
             };
 
-            if(portfolio.stocks[index]?.qty == 0){
+            if(portfolio.stocks[index]!.qty == 0){
                 portfolio.stocks.splice(index , 1);
             }
             await portfolio.save({session});
@@ -143,19 +149,19 @@ async function soldStock(userId:any , stock:any , qty:any , price:any , order:an
             await user.save({session});
             const transaction = new Transaction({
             user : user._id,
-            type : "SELL" , 
+            type : transactionType.SELL , 
             amount : (Number(qty) * price)
          });
          await transaction.save({session});
-        order.status = "EXECUTED";
-         order.executedAt = Date.now();
+        order.status = status.EXECUTED;
+         order.executedAt = new Date(Date.now());
          order.executedPrice = price;
     await order.save({session});
     await session.commitTransaction();
         } catch (error) {
               try {
          await session.abortTransaction();
-        order.status = "REJECTED";
+        order.status = status.REJECTED;
         await order.save();
     } catch (saveError) {
         console.error("Failed to update order status:", saveError);
@@ -165,8 +171,8 @@ async function soldStock(userId:any , stock:any , qty:any , price:any , order:an
             session.endSession();
         }
     }  
-async function buyStock(user:any , stock:any , qty:any , price:any , order:any){
-    if(order.orderType == "Limit"){
+async function buyStock(user:userId , stock:string , qty:number , price:number , order:OrderDocument){
+    if(order.orderType == type.Limit){
     // add this order in the order queue to buy     
     // Limiting price is in thhe order.requested Price                                                                 
    if (!orderBuy.has(stock)) {
@@ -175,7 +181,7 @@ async function buyStock(user:any , stock:any , qty:any , price:any , order:any){
     orderBuy.get(stock)!.push(order);
     // subscribe it as well
      if(map.has(stock)){
-                             map.set(stock , map.get(stock) + 1);
+                             map.set(stock , map.get(stock)! + 1);
                             return stock;
                         }
                             if (ws.readyState === WebSocket.OPEN) {
@@ -192,8 +198,8 @@ async function buyStock(user:any , stock:any , qty:any , price:any , order:any){
     }
 }
 
-async function sellStock(user:any , stock:any , qty:any , price:any , order:any){
-    if(order.orderType == "Limit"){
+async function sellStock(user:userId , stock:string , qty:number , price:number , order:OrderDocument){
+    if(order.orderType == type.Limit){
 // add this order in the order queue to sell       
     if (!orderSell.has(stock)) {
     orderSell.set(stock, []);
@@ -202,7 +208,7 @@ async function sellStock(user:any , stock:any , qty:any , price:any , order:any)
 orderSell.get(stock)!.push(order);
         
           if(map.has(stock)){
-                             map.set(stock , map.get(stock) + 1);
+                             map.set(stock , map.get(stock)! + 1);
                             return stock;
                         }
                             if (ws.readyState === WebSocket.OPEN) {
@@ -212,7 +218,7 @@ orderSell.get(stock)!.push(order);
                 subscribe: [stock],
             })
         );
-    }  
+    }   
     }
     else{
         await soldStock(user ,stock , qty , price , order);

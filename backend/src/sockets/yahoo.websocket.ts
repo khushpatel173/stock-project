@@ -1,4 +1,4 @@
-
+import type { Server as HttpServer } from "node:http";
 import WebSocket from 'ws';
 import {WebSocketServer} from 'ws'
 import protobuf from 'protobufjs'
@@ -6,11 +6,11 @@ import { map  , priceMap} from '../services/map.js';
 import { orderBuy , orderSell } from '../services/map.js';
 import { buyStock, purchaseStock, soldStock } from '../services/order.services.js';
 import dotenv from 'dotenv'
-
+import Order from '../models/Order.js';
 dotenv.config();
-
+        type OrderDocument = InstanceType<typeof Order>;
         export const ws = new WebSocket(process.env.YAHOO_WS!);
-        let activeSubscription:any = [];
+        let activeSubscription:string[] = [];
         ws.on("open" , async()=>{
             // when the socket opens subscriibs to the stock which are pending
             ws.send(
@@ -24,7 +24,7 @@ dotenv.config();
            
         });
 
-export function initWebSocket (server:any){
+export function initWebSocket (server:HttpServer){
     try {
           const ws2 = new WebSocketServer({
             server
@@ -45,22 +45,24 @@ export function initWebSocket (server:any){
             // check if there are any orders for this stocks and if there are then execute them if you can
                     if (orderBuy.has(decoded.id)) {
                         const orders = orderBuy.get(decoded.id);
-                        const remainingOrders = [];
+                        const remainingOrders:OrderDocument[] = [];
 
-                            for (const order of orders) {
-                                if (order.requestedPrice >= decoded.price) {
+                            for (const order of orders!) {
+                                try {
+                                     if (order.requestedPrice >= decoded.price) {
+                                    
                                     await purchaseStock(
                                         order.user,
                                         decoded.id,
                                         order.qty,
-                                        decoded.price,
+                                        Number(decoded.price),
                                         order
                                     );
                                     // unsubscribe or decrease the count as the order is complete so no need to make sure
                                      if(map.has(decoded.id)){
-                            map.set(decoded.id , map.get(decoded.id) - 1);
+                            map.set(decoded.id , map.get(decoded.id)! - 1);
                         }
-                         if(!map.has(decoded.id) || map.get(decoded.id) > 0){
+                         if(!map.has(decoded.id) || map.get(decoded.id)! > 0){
                     // then dont unsubscribe
                 }
                 else{
@@ -78,6 +80,9 @@ export function initWebSocket (server:any){
                                 } else {
                                     remainingOrders.push(order);
                                 }
+                                } catch (error) {
+                                    console.log("Some error");
+                                }
                             }
             orderBuy.set(decoded.id, remainingOrders);
         }
@@ -85,20 +90,20 @@ export function initWebSocket (server:any){
                         const orders = orderSell.get(decoded.id);
                         const remainingOrders = [];
 
-                            for (const order of orders) {
+                            for (const order of orders!) {
                                 if (order.requestedPrice <= decoded.price) {
                                     await soldStock(
                                         order.user,
                                         decoded.id,
                                         order.qty,
-                                        decoded.price,
+                                        Number(decoded.price),
                                         order
                                     );
 
                                        if(map.has(decoded.id)){
-                            map.set(decoded.id , map.get(decoded.id) - 1);
+                            map.set(decoded.id , map.get(decoded.id)! - 1);
                         }
-                         if(!map.has(decoded.id) || map.get(decoded.id) > 0){
+                         if(!map.has(decoded.id) || map.get(decoded.id)! > 0){
                     // then dont unsubscribe
                 }
                 else{
@@ -133,8 +138,12 @@ export function initWebSocket (server:any){
         }
             })
     //
-                } catch (error:any) {
-                  console.log("Some error : " , error.message); 
+                } catch (error:unknown) {
+                  if (error instanceof Error) {
+        console.error("WebSocket message error:", error.message);
+    } else {
+        console.error("WebSocket message error:", error);
+    }
                 }
         });
 
@@ -148,14 +157,14 @@ export function initWebSocket (server:any){
         });
         ws2.on("connection" , (client)=>{
             console.log("Frontend ws connected"); 
-            client.on("message" , (message : any)=>{
+            client.on("message" , (message)=>{
                 const parsed = JSON.parse(message.toString());  
                 // console.log(parsed);  
                 // client have sent a message that i need info of this particular stck
                 if(parsed.type === "subscribe"){
-                    parsed.stock.map((stock:any , index:any) => {
+                    parsed.stock.map((stock:string , index:number) => {
                           if(map.has(stock)){
-                             map.set(stock , map.get(stock) + 1);
+                             map.set(stock , map.get(stock)! + 1);
                             return stock;
                         }
                         console.log(ws.readyState === WebSocket.OPEN);
@@ -177,11 +186,11 @@ export function initWebSocket (server:any){
                 // add about unsubsribe
                 else if(parsed.type === 'unsubscribe'){
                     console.log("Before" , map);
-                    parsed.stock.map((stock:any,index:any) =>{
+                    parsed.stock.map((stock:string,index:number) =>{
                         if(map.has(stock)){
-                            map.set(stock , map.get(stock) - 1);
+                            map.set(stock , map.get(stock)! - 1);
                         }
-                         if(!map.has(stock) || map.get(stock) > 0){
+                         if(!map.has(stock) || map.get(stock)! > 0){
                     // then dont unsubscribe
                     return stock;
                 }

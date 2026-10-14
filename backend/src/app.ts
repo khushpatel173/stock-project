@@ -12,6 +12,8 @@ import Order from './models/Order.js';
 import { Transaction } from './models/Transaction.js';
 import dotenv from 'dotenv'
 
+
+type userSchema = InstanceType<typeof User>;
 dotenv.config();
 const app = express();
 const isProduction = true;
@@ -64,7 +66,7 @@ app.get(
         });
     }
 
-    let portfolio:any = await Port.findOne({
+    let portfolio = await Port.findOne({
         owner : req.user!._id
     });
     if(!portfolio){
@@ -194,6 +196,9 @@ app.post("/buy/:stock" , authMiddleware ,  async(req ,res)=>{
 
     try {
         const {stock} = req.params;
+        if(typeof stock != "string"){
+             throw new Error("Error finding the stock");
+        }
     const {qty} = req.query;
     // now we need the latest price of the stocks
     const price = priceMap.get(stock);
@@ -219,7 +224,7 @@ const user = req.user;
         user : user._id , 
         type : "BUY" , 
         status : "PENDING" , 
-        createdAt : Date.now() , 
+        createdAt : new Date(Date.now()) , 
         symbol : stock , 
         qty,
         requestedPrice : (orderType ? limitPrice : reqPrice)  , 
@@ -227,7 +232,7 @@ const user = req.user;
             }
         );
         await order.save();
-    await buyStock(user._id , stock , qty , price , order);
+    await buyStock(user._id , stock , Number(qty) , price , order);
          res.status(201).json({
                 message : "Order places successfully" , 
                 orderedPrice : price , 
@@ -245,6 +250,9 @@ const user = req.user;
 app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
     try {
         const {stock} = req.params;
+        if(typeof stock != "string"){
+            throw new Error("Error fetching the stock");
+        }
     const {qty} = req.query;
     const {reqPrice , orderType , limitPrice} = req.body;
     // now we need the latest price of the stocks
@@ -268,7 +276,7 @@ app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
         user : user._id , 
         type : "SELL" , 
         status : "PENDING" , 
-        createdAt : Date.now() , 
+        createdAt : new Date(Date.now()) , 
         symbol : stock , 
         qty , 
         requestedPrice : (orderType ? limitPrice : reqPrice) , 
@@ -276,7 +284,7 @@ app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
             }
         );
          await order.save();
-        await sellStock(user._id , stock , qty , price , order);
+        await sellStock(user._id , stock , Number(qty) , price , order);
          res.status(201).json({
                         message : "Stock Sold successfully" , 
                         soldPrice : price , 
@@ -292,7 +300,7 @@ app.post("/sell/:stock" ,authMiddleware ,  async(req ,res)=>{
 app.get("/portfolio" ,authMiddleware, async(req ,res)=>{
     // take the logged in user and give the portfolio
     try {
-        const user:any = req.user;
+        const user = req.user;
         if(!user){
             //  return res.status(404).json({
             //     message: "User not found"
@@ -320,7 +328,7 @@ app.get("/portfolio" ,authMiddleware, async(req ,res)=>{
 
 app.get("/orders" , authMiddleware , async(req ,res)=>{
     try {
-        const user:any = req.user;
+        const user = req.user;
     if(!user){
         // res.status(401).json(
         //     {
@@ -350,7 +358,7 @@ app.get("/orders" , authMiddleware , async(req ,res)=>{
 
 app.get("/transactions" , authMiddleware , async(req ,res)=>{
     try {
-        const user:any = req.user;
+        const user = req.user;
          if(!user){
         // res.status(401).json(
         //     {

@@ -7,7 +7,7 @@ export enum orderType{
 export enum status {
     PENDING="PENDING" , EXECUTED="EXECUTED" , REJECTED="REJECTED"
 }
-enum type {
+export enum type {
     Market="Market" , Limit="Limit"
 }
 export interface orderSchema {

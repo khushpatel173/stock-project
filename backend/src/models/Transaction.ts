@@ -1,6 +1,6 @@
 import mongoose, { Types } from "mongoose";
 
-enum transactionType {
+export enum transactionType {
     BUY="BUY" , SELL="SELL"
 };
 
