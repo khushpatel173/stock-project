@@ -1,11 +1,11 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 interface IUser {
     googleId: string;
     name: string;
     email: string;
     picture: string;
-    portfolio: mongoose.Types.ObjectId;
+    portfolio: Types.ObjectId;
     balanceLeft : number;
 }
 

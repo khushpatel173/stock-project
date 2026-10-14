@@ -9,10 +9,6 @@ import type { NextFunction , Request , Response} from 'express';
   export async function authMiddleware(req:Request , res:Response , next:NextFunction){
 
     try {
-
-       interface userPayload extends JwtPayload {
-        userId : string
-       };
         const authHeader = req.headers.authorization;
         const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
         const token = bearerToken ?? req.cookies.token;

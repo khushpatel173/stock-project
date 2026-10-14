@@ -1,7 +1,19 @@
 
-import mongoose, { mongo } from "mongoose";
+import mongoose , {Types} from "mongoose";
 
-const portSchema = new mongoose.Schema({
+interface Stock{
+    name : string , 
+    qty : number, 
+    buy : number ,
+    purchasedDate : Date
+};
+
+interface Portfolio{
+    stocks : Stock[] , 
+    owner : Types.ObjectId
+}
+
+const portSchema = new mongoose.Schema<Portfolio>({
     stocks : [{
         name : {
             type : String
@@ -21,5 +33,5 @@ const portSchema = new mongoose.Schema({
 });
 
 
-const Port = mongoose.model("Port" , portSchema);
+const Port = mongoose.model<Portfolio>("Port" , portSchema);
 export default Port

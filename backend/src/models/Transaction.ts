@@ -1,6 +1,16 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 
-const transactionSchema = new mongoose.Schema({
+enum transactionType {
+    BUY="BUY" , SELL="SELL"
+};
+
+interface Transaction{
+      user : Types.ObjectId , 
+      type : transactionType     , 
+      amount : number , 
+};
+
+const transactionSchema = new mongoose.Schema<Transaction>({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -20,5 +30,5 @@ const transactionSchema = new mongoose.Schema({
     },
 } , {timestamps : true});
 
-export const Transaction = mongoose.model("Transaction" , transactionSchema);
+export const Transaction = mongoose.model<Transaction>("Transaction" , transactionSchema);
 
