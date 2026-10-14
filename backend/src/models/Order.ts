@@ -15,10 +15,10 @@ export interface orderSchema {
     type : orderType , 
     status : status , 
     createdAt : Date , 
-    executedAt : Date , 
+    executedAt? : Date , 
     symbol : string ,
     requestedPrice : number , 
-    executedPrice : number , 
+    executedPrice? : number , 
     orderType : type , 
     qty : number
 };
@@ -44,7 +44,7 @@ const orderSchema = new mongoose.Schema<orderSchema>({
         required : true
     } , 
     executedAt : {
-        type : Date , required : true
+        type : Date 
     } , 
     symbol : {
         type : String , 
@@ -54,7 +54,7 @@ const orderSchema = new mongoose.Schema<orderSchema>({
         type : Number , required : true
     } , 
     executedPrice : {
-        type : Number , required : true
+        type : Number 
     } , 
     orderType : {
         type : String, 
